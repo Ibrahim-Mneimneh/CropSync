@@ -55,11 +55,14 @@ const deleteProfile = async (req, res) => {
   try {
     const userId = req.userId;
     const updatedUser = await User.findByIdAndUpdate(userId, {
-      profilePicture: "",
+      profilePicture: null,
     });
+    if (!updatedUser) {
+      return res.status(200).json({ message: "Profile picture update failed" });
+    }
     return res
       .status(200)
-      .json({ message: "Profile picture updates successfully" });
+      .json({ message: "Profile picture updated successfully" });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }

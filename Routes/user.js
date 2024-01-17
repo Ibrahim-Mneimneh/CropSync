@@ -35,6 +35,7 @@ router.use("/DeleteAccount", verifyUser);
 router.use("/add/device", verifyUser);
 router.use("/set/profile", verifyUser);
 router.use("/profile", verifyUser);
+router.use("/delete/profile", verifyUser);
 
 router.post("/ResetPassword", resetPassword);
 router.get("/Request/DeleteAccount", deleteAccountRequest);
@@ -44,4 +45,5 @@ router.post("/ChangePassword", changePassword);
 router.post("/add/device", addDevice);
 router.post("/set/profile", setProfile);
 router.get("/profile", getProfile);
+router.delete("/delete/profile", deleteProfile);
 module.exports = router;
