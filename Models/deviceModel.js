@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const deviceSchema = new Schema(
   {
-    isConnected: { type: boolean, default: false },
+    isConnected: { type: Boolean, default: false },
     deviceId: { type: String, required: true },
     city: {
       type: String,
@@ -21,6 +21,7 @@ const deviceSchema = new Schema(
     cropId: {
       type: String,
     },
+    code: { type: String },
   },
   { timestamps: true }
 );

@@ -1,4 +1,5 @@
 var randomize = require("randomatic");
+const validator = require("validator");
 //Models
 const User = require("../Models/userModel");
 const Device = require("../Models/deviceModel");
@@ -17,14 +18,36 @@ const setProfile = async (req, res) => {
     }
     // convert base 64 to buffer
     const profilePictureBuffer = Buffer.from(profilePicture, "base64");
-    const updatedUser = await User.findByIdAndUpdate(userId, {
-      profilePicture: profilePictureBuffer,
-    });
-    return res
-      .status(200)
-      .json({ message: "Profile picture updates successfully" });
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        profilePicture: profilePictureBuffer,
+      },
+      { new: true }
+    );
+    if (!updatedUser) {
+      return res
+        .status(200)
+        .json({ message: "Failed to update profile picture." });
+    }
+    return res.status(200).json({ message: "Profile update successfully" });
   } catch (error) {
     return res.status(500).json({ error: error.message });
+  }
+};
+
+const getProfile = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const user = await User.findById(userId);
+    const profilePictureBuffer = user.profilePicture;
+    if (!user.profilePicture) {
+      return res.status(404).json({ error: "Profile picture not found" });
+    }
+    const profilePictureBase64 = user.profilePicture.toString("base64");
+    res.status(200).json({ profilePicture: profilePictureBase64 });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
 // delete profile image
@@ -80,19 +103,21 @@ const getDevices = async (req, res) => {
 // Add a device
 const addDevice = async (req, res) => {
   try {
-    const { location, deviceName } = req.body;
-    if (!location || !deviceName) {
+    const { location, deviceName, code } = req.body;
+    if (!location || !deviceName || !code) {
       return res.status(400).json({ error: "All fields are required" });
     }
-    const userId = req.userId;
     const [city, country] = location.split(", ");
-    const device = await Device.create({
-      deviceId: "Micro-" + randomize("Aa0", 6),
-      userId,
+    const deviceData = await Device.create({
+      deviceId: "Micro-" + randomize("a0", 6),
+      userId: req.userId,
       name: deviceName,
       city,
       country,
+      code,
     });
+    const { _id, userId, createdAt, updatedAt, ...device } =
+      deviceData.toObject();
     // add crop declaration right here ******
     return res.status(200).json({ device });
   } catch (error) {
@@ -113,4 +138,12 @@ const setDeviceLocation = async (req, res) => {
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
+};
+module.exports = {
+  setDeviceLocation,
+  setProfile,
+  getProfile,
+  deleteProfile,
+  getDevices,
+  addDevice,
 };
