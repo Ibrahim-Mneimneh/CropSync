@@ -34,7 +34,7 @@ const cropAuthSchema = new Schema(
     },
     image: [{ type: Buffer }],
     sensorCollectionDate: [{ type: Date }],
-    cameraCollecationDate: [{ type: Date }],
+    cameraCollectionDate: [{ type: Date }],
   },
   { timestamps: true }
 );

@@ -18,6 +18,7 @@ const {
   deleteProfile,
   getDevices,
   addDevice,
+  deleteDevice,
   getProfile,
 } = require("../Controllers/userController-2");
 const router = express.Router();
@@ -36,6 +37,7 @@ router.use("/add/device", verifyUser);
 router.use("/set/profile", verifyUser);
 router.use("/profile", verifyUser);
 router.use("/delete/profile", verifyUser);
+router.use("/device", verifyUser);
 
 router.post("/ResetPassword", resetPassword);
 router.get("/Request/DeleteAccount", deleteAccountRequest);
@@ -46,4 +48,5 @@ router.post("/add/device", addDevice);
 router.post("/set/profile", setProfile);
 router.get("/profile", getProfile);
 router.delete("/delete/profile", deleteProfile);
+router.delete("/device", deleteDevice);
 module.exports = router;
