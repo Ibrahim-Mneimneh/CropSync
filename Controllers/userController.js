@@ -122,15 +122,19 @@ const signupUser = async (req, res) => {
 
 const getUser = async (req, res) => {
   try {
-    const userId = req.userId;
-    const user = await User.findById(userId);
+    const userData = await User.findById(req.userId);
+    if (!userData) {
+      return res.status(404).json({ error: "User not found." });
+    }
     const {
       _id,
+      devicesId,
+      createdAt,
       dateModified,
       password: userPassword,
-      ...userData
-    } = user.toObject();
-    res.status(200).json(userData);
+      ...user
+    } = userData.toObject();
+    res.status(200).json(user);
   } catch (err) {
     res.status(500).json(err);
   }
@@ -184,6 +188,7 @@ const resetPassword = async (req, res) => {
     const {
       _id,
       dateModified,
+      devicesId,
       password: userPassword,
       ...userData
     } = updatedUser.toObject();

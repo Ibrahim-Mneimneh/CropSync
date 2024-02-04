@@ -140,9 +140,12 @@ const resetPasswordRequest = async (req, res) => {
     let isEmail = validator.isEmail(email);
 
     if (!isEmail) {
-      return res.status(404).json({ error: "Invalid Email." });
+      return res.status(403).json({ error: "Invalid Email." });
     }
     let identity = await User.findOne({ email });
+    if (!identity) {
+      return res.status(404).json({ error: "Invalid Email." });
+    }
     //delete old auth
     const deleteAuth = await FPAuth.findOneAndDelete({
       userEmail: email,

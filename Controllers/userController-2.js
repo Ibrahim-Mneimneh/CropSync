@@ -72,31 +72,34 @@ const deleteProfile = async (req, res) => {
 const getDevices = async (req, res) => {
   try {
     const userId = req.userId;
-    const user = User.findById(userId);
-    const { devicesId } = user;
-    if (!devicesId) {
+    const user = await User.findById(userId);
+    // user not found
+    if (!user) {
       return res.status(404).json({ error: "Devices not found" });
     }
-    const devices = devicesId.map(async (deviceId) => {
-      const deviceData = await Device.findById(deviceId);
-      if (!deviceData) {
-        return res
-          .status(404)
-          .json({ error: "Failed to locate user's device." });
-      }
-      const cropData = await CropModel.findById(deviceData.cropId);
-      // edit the crop data for later on ********
-      const crop = {
-        name: cropData.name,
-      };
-      const device = {
-        deviceId,
-        location: deviceData.city + ", " + deviceData.country,
-        name: deviceData.name,
-        crop,
-      };
-      return device;
-    });
+    // there is no devices for the user
+    const { devicesId } = user;
+    if (!devicesId) {
+      return res.status(404).json({ error: "Please add a device" });
+    }
+
+    const devices = await Promise.all(
+      devicesId.map(async (deviceId) => {
+        const deviceData = await Device.findById(deviceId);
+        if (!deviceData) {
+          return res.status(404).json({ error: "Failed to find device." });
+        }
+        // edit the crop data for later on ********
+        const device = {
+          deviceId: deviceData.deviceId,
+          location: deviceData.city + ", " + deviceData.country,
+          name: deviceData.name,
+          isConnected: deviceData.isConnected,
+          code: deviceData.code,
+        };
+        return device;
+      })
+    );
     return res.status(200).json({ devices });
   } catch (error) {
     return res.status(500).json({ error: error.message });
@@ -133,6 +136,48 @@ const addDevice = async (req, res) => {
       deviceData.toObject();
     // add crop declaration right here ******
     return res.status(200).json({ ...device });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+// edit device name and location
+const editDevice = async (req, res) => {
+  try {
+    const { location, name, deviceId } = req.body;
+    if (!deviceId) {
+      return res.status.json({
+        error: "Please select a device to edit",
+      });
+    }
+    if (!location && !name) {
+      return res.status.json({
+        error: "Please fill at least 1 required field",
+      });
+    }
+    const updateFields = {};
+
+    if (location) {
+      const [city, country] = location.split(", ");
+      updateFields.city = city;
+      updateFields.country = country;
+    }
+
+    if (name) {
+      updateFields.name = name;
+    }
+
+    const updatedDeviceData = await Device.findOneAndUpdate(
+      { userId: req.userId, deviceId },
+      updateFields,
+      { new: true }
+    );
+
+    if (!updatedDeviceData) {
+      return res.status(404).json({ error: "Device not found" });
+    }
+    const { _id, userId, createdAt, updatedAt, ...device } =
+      updatedDeviceData.toObject();
+    return res.status(200).json(device);
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -178,27 +223,12 @@ const deleteDevice = async (req, res) => {
   }
 };
 
-// change the location of the device (needs modification)
-const setDeviceLocation = async (req, res) => {
-  try {
-    const userId = req.userId;
-    const { country, city } = req.body;
-    if (!country || !city) {
-      return res.status(400).json({ error: "Please select a country/city" });
-    }
-    const user = await User.findById(userId);
-    const deviceId = user.deviceId;
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
-};
-
 module.exports = {
-  setDeviceLocation,
   setProfile,
   getProfile,
   deleteProfile,
   getDevices,
   addDevice,
+  editDevice,
   deleteDevice,
 };

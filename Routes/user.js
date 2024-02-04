@@ -20,6 +20,7 @@ const {
   addDevice,
   deleteDevice,
   getProfile,
+  editDevice,
 } = require("../Controllers/userController-2");
 const router = express.Router();
 
@@ -29,7 +30,6 @@ router.post("/signup", signupUser);
 router.post("/Request/ResetPassword", resetPasswordRequest);
 // Middleware for these 2 routes
 router.use("/ResetPassword", verifyUser);
-router.use("/info", verifyUser);
 router.use("/ChangePassword", verifyUser);
 router.use("/Request/DeleteAccount", verifyUser);
 router.use("/DeleteAccount", verifyUser);
@@ -38,15 +38,19 @@ router.use("/set/profile", verifyUser);
 router.use("/profile", verifyUser);
 router.use("/delete/profile", verifyUser);
 router.use("/device", verifyUser);
+router.use("/devices", verifyUser);
+router.use("/", verifyUser);
 
 router.post("/ResetPassword", resetPassword);
 router.get("/Request/DeleteAccount", deleteAccountRequest);
 router.delete("/DeleteAccount", deleteAccount);
-router.get("/info", getUser);
 router.post("/ChangePassword", changePassword);
 router.post("/add/device", addDevice);
 router.post("/set/profile", setProfile);
 router.get("/profile", getProfile);
 router.delete("/delete/profile", deleteProfile);
 router.delete("/device", deleteDevice);
+router.get("/devices", getDevices);
+router.get("/", getUser);
+router.patch("/device", editDevice);
 module.exports = router;
