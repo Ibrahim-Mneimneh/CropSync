@@ -3,7 +3,7 @@ const validator = require("validator");
 //Models
 const User = require("../Models/userModel");
 const Device = require("../Models/deviceModel");
-const CropModel = require("../Models/CropModel");
+const Crop = require("../Models/CropModel");
 
 // set profile image
 const setProfile = async (req, res) => {
@@ -113,15 +113,24 @@ const addDevice = async (req, res) => {
     if (!location || !name || !code) {
       return res.status(400).json({ error: "All fields are required" });
     }
-    const [city, country] = location.split(", ");
-    const deviceData = await Device.create({
+    // create crop
+    const crop = await Crop.create({});
+
+    if (!crop) {
+      return res.status(400).json({ error: "Failed to add device" });
+    }
+
+    const [cityName, countryName] = location.split(", ");
+    let deviceData = await Device.create({
       deviceId: "Micro-" + randomize("a0", 6),
       userId: req.userId,
       name,
-      city,
-      country,
+      city: cityName,
+      country: countryName,
       code,
+      cropId: crop._id,
     });
+
     // update the devicesId in the user model
     if (deviceData) {
       const updatedUser = await User.findByIdAndUpdate(
@@ -132,10 +141,10 @@ const addDevice = async (req, res) => {
         { new: true }
       );
     }
-    const { _id, userId, createdAt, updatedAt, ...device } =
+    const { _id, userId, createdAt, updatedAt, country, city, ...device } =
       deviceData.toObject();
     // add crop declaration right here ******
-    return res.status(200).json({ ...device });
+    return res.status(200).json({ ...device, location });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -218,6 +227,48 @@ const deleteDevice = async (req, res) => {
       deletedDeviceData.toObject();
 
     return res.status(200).json(deletedDevice);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+// set a crop **************************
+const setDeviceCrop = async (req, res) => {
+  try {
+    const { name, profile, deviceId } = req.body;
+    if (!deviceId) {
+      return res.status.json({
+        error: "Please select a device to edit",
+      });
+    }
+    if (!name && !profile) {
+      return res.status.json({
+        error: "Please fill at least 1 required field",
+      });
+    }
+    const updateFields = {};
+    if (name) {
+      updateFields.name = name;
+    }
+
+    if (profile) {
+      const profileBuffer = Buffer.from(profile, "base64");
+      updateFields.profile = profileBuffer;
+    }
+    const deviceData = await Device.findOne({ deviceId });
+    if (!deviceData) {
+      return res.status(400).json({ error: "Failed to set crop credtials" });
+    }
+    const cropData = await Crop.findByIdAndUpdate(
+      deviceData.cropId,
+      updateFields,
+      { new: true }
+    );
+    if (!cropData) {
+      return res.status(400).json({ error: "Failed to set crop credtials" });
+    }
+    const { _id, ...crop } = cropData.toObject();
+    return res.status(200).json(crop);
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }

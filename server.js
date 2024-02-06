@@ -4,6 +4,7 @@ const { verifyUser } = require("./Middleware/UserAuth");
 dotenv = require("dotenv");
 userRoutes = require("./Routes/user");
 authRoutes = require("./Routes/userAuth");
+deviceRoutes = require("./Routes/device");
 const app = express();
 
 dotenv.config();
@@ -15,9 +16,9 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use("/api/device", deviceRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api", authRoutes);
-app.use(verifyUser);
 
 mongoose
   .connect(process.env.DBURL)

@@ -3,16 +3,12 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const cropAuthSchema = new Schema(
   {
-    userId: {
-      type: String,
-      required: true,
-    },
-    deviceId: {
-      type: String,
-      required: true,
-    },
     name: {
       type: String,
+      default: null,
+    },
+    profile: {
+      type: Buffer,
     },
     nitrogen: {
       type: Array,

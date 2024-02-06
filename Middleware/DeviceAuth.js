@@ -1,7 +1,8 @@
 const jwt = require("jsonwebtoken");
 const Device = require("../Models/deviceModel");
 const User = require("../Models/userModel");
-const verifyUser = async (req, res, next) => {
+const Crop = require("../Models/CropModel");
+const verifyDevice = async (req, res, next) => {
   const { authorization } = req.headers;
 
   if (!authorization) {
@@ -11,20 +12,22 @@ const verifyUser = async (req, res, next) => {
   const token = authorization.split(" ")[1];
 
   try {
-    let { deviceId, userId } = jwt.verify(token, process.env.SECRET);
-
+    let { deviceId, cropId } = jwt.verify(token, process.env.SECRET);
     const device = await Device.findById(deviceId);
-    const user = await User.findById(userId);
-    //user exists
-    if (!device || !user) {
-      return res.status(403).json({ error: "UnAuthorized Access!" });
+    const crop = await Crop.findById(cropId);
+    //device exists
+    if (!device) {
+      return res.status(403).json({ error: "UnAuthorized Access! 1" });
+    }
+    if (!crop) {
+      return res.status(403).json({ error: "UnAuthorized Access! 2" });
     }
     req.deviceId = device._id;
-    req.userId = user._id;
+    req.cropId = device.cropId;
     next();
   } catch (error) {
     console.log(error);
     return res.status(401).json({ error: "UnAuthorized Request!" });
   }
 };
-module.exports = { verifyUser };
+module.exports = { verifyDevice };
