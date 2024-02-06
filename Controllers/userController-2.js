@@ -89,13 +89,19 @@ const getDevices = async (req, res) => {
         if (!deviceData) {
           return res.status(404).json({ error: "Failed to find device." });
         }
-        // edit the crop data for later on ********
+        const crop = await Crop.findById(deviceData.cropId);
+        if (!crop) {
+          return res.status(404).json({ error: "Failed to find device." });
+        }
         const device = {
           deviceId: deviceData.deviceId,
           location: deviceData.city + ", " + deviceData.country,
           name: deviceData.name,
           isConnected: deviceData.isConnected,
           code: deviceData.code,
+          crop: {
+            name: crop.name ? crop.name : null,
+          },
         };
         return device;
       })
