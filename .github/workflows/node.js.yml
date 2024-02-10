@@ -14,7 +14,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x]
+        node-version: [20.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -28,3 +28,4 @@ jobs:
     - run: |
         touch .env
         echo "${{ secrets.ENV_FILE }}" > .env
+    - run: pm2 restart CropSyncAPI
