@@ -18,7 +18,7 @@ const getDailyWeather = async (req, res) => {
           process.env.weatherKey +
           "&q=" +
           location +
-          "&aqi=yes";
+          "&aqi=no";
         const weatherDataResponse = await fetch(endpoint);
         const weatherData = await weatherDataResponse.json();
         return { name: device.name, location, ...weatherData.current };
