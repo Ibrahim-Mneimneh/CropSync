@@ -16,7 +16,9 @@ app.use((req, res, next) => {
   console.log(req.path);
   next();
 });
-
+app.get("/api/wejjak", (req, res) => {
+  res.render("wejjak");
+});
 app.use("/api/device", deviceRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api", authRoutes);
