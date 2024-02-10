@@ -11,7 +11,10 @@ const {
   deleteAccountRequest,
   deleteAccount,
 } = require("../Controllers/AuthController");
-const { getDailyWeather } = require("../Controllers/userWeatherController");
+const {
+  getDailyWeather,
+  getWeeklyWeather,
+} = require("../Controllers/userWeatherController");
 const { verifyUser } = require("../Middleware/UserAuth");
 const {
   setDeviceLocation,
@@ -42,6 +45,7 @@ router.use("/device", verifyUser);
 router.use("/devices", verifyUser);
 router.use("/", verifyUser);
 router.use("/daily/weather", verifyUser);
+router.use("/weather/forecast/:num", verifyUser);
 
 router.post("/ResetPassword", resetPassword);
 router.get("/Request/DeleteAccount", deleteAccountRequest);
@@ -56,4 +60,5 @@ router.get("/devices", getDevices);
 router.get("/", getUser);
 router.patch("/device", editDevice);
 router.get("/daily/weather", getDailyWeather);
+router.get("/weather/forecast/:num", getWeeklyWeather);
 module.exports = router;
