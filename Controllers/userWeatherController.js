@@ -70,8 +70,6 @@ const getWeeklyWeather = async (req, res) => {
   }
 };
 
-// soon forecasts
-
 module.exports = {
   getDailyWeather,
   getWeeklyWeather,
