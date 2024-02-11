@@ -15,7 +15,7 @@ const getDailyWeather = async (req, res) => {
         const location = device.city + ",%20" + device.country;
         const endpoint =
           "http://api.weatherapi.com/v1/current.json?key=" +
-          process.env.weatherKey +
+          process.env.WeatherKey +
           "&q=" +
           location +
           "&aqi=no";
@@ -53,7 +53,7 @@ const getWeeklyWeather = async (req, res) => {
         const location = device.city + ",%20" + device.country;
         const endpoint =
           "http://api.weatherapi.com/v1/forecast.json?key=" +
-          process.env.weatherKey +
+          process.env.WeatherKey +
           "&q=" +
           location +
           "&days=" +
