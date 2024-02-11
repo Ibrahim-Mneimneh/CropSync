@@ -12,7 +12,7 @@ const getDailyWeather = async (req, res) => {
 
     const userWeatherData = await Promise.all(
       devices.map(async (device) => {
-        const location = device.city + ", " + device.country;
+        const location = device.city + ",%20" + device.country;
         const endpoint =
           "http://api.weatherapi.com/v1/current.json?key=" +
           process.env.weatherKey +
@@ -21,7 +21,12 @@ const getDailyWeather = async (req, res) => {
           "&aqi=no";
         const weatherDataResponse = await fetch(endpoint);
         const weatherData = await weatherDataResponse.json();
-        return { name: device.name, location, ...weatherData.current };
+        return {
+          name: device.name,
+          deviceId: device.deviceId,
+          location: device.city + ", " + device.country,
+          ...weatherData.current,
+        };
       })
     );
     return res.status(200).json(userWeatherData);
@@ -45,7 +50,7 @@ const getWeeklyWeather = async (req, res) => {
 
     const userWeatherData = await Promise.all(
       devices.map(async (device) => {
-        const location = device.city + ", " + device.country;
+        const location = device.city + ",%20" + device.country;
         const endpoint =
           "http://api.weatherapi.com/v1/forecast.json?key=" +
           process.env.weatherKey +
@@ -61,7 +66,12 @@ const getWeeklyWeather = async (req, res) => {
         const weatherData = weatherDataArray.map((day) => {
           return { date: day.date, ...day.day };
         });
-        return { name: device.name, location, weatherData };
+        return {
+          name: device.name,
+          deviceId: device.deviceId,
+          location: device.city + ", " + device.country,
+          weatherData,
+        };
       })
     );
     return res.status(200).json(userWeatherData);
