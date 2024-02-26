@@ -5,7 +5,7 @@ const path = require("path");
 async function loadModel() {
   try {
     const modelPath = path.resolve(__dirname, "Model_Layers/model.json");
-    const model = await tf.loadGraphModel(`file://${modelPath}`);
+    const model = await tf.loadLayersModel(`file://${modelPath}`);
     console.log("Model Summary:", model.summary());
     return model;
   } catch (error) {
