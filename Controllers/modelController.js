@@ -4,7 +4,7 @@ const path = require("path");
 
 async function loadModel() {
   try {
-    const modelPath = path.resolve(__dirname, "Model_Layers/model.json");
+    const modelPath = path.resolve(__dirname, "Model_Layers/model.json"); // model directory
     const model = await tf.loadLayersModel(`file://${modelPath}`);
     console.log("Model Summary:", model.summary());
     return model;
@@ -16,7 +16,6 @@ async function loadModel() {
 
 async function preprocessImage(base64Image) {
   const binaryImage = Buffer.from(base64Image, "base64");
-
   const img = await loadImage(binaryImage);
   const canvas = createCanvas(224, 224);
   const ctx = canvas.getContext("2d");
@@ -38,7 +37,7 @@ const isHealthy = async (req, res) => {
       return res.status(400).json({ error: "Please select an image" });
     }
     const model = await loadModel();
-    console.log("here !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    console.log("here !!!!!!!!!!!!!!!!!");
     const preprocessedImage = await preprocessImage(base64Image);
     const predictions = await model
       .predict(tf.tensor(preprocessedImage))
