@@ -25,6 +25,7 @@ const {
   deleteDevice,
   getProfile,
   editDevice,
+  setDeviceCrop,
 } = require("../Controllers/userController-2");
 const { isHealthy } = require("../Controllers/modelController");
 const router = express.Router();
@@ -48,6 +49,7 @@ router.use("/", verifyUser);
 router.use("/daily/weather", verifyUser);
 router.use("/weather/forecast/:num", verifyUser);
 router.use("/leaf/state", verifyUser);
+router.use("/set/crop", verifyUser);
 
 router.post("/ResetPassword", resetPassword);
 router.get("/Request/DeleteAccount", deleteAccountRequest);
@@ -64,4 +66,6 @@ router.patch("/device", editDevice);
 router.get("/daily/weather", getDailyWeather);
 router.get("/weather/forecast/:num", getWeeklyWeather);
 router.post("/leaf/state", isHealthy);
+router.post("/set/crop", setDeviceCrop);
+
 module.exports = router;

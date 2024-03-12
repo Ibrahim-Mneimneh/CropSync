@@ -4,7 +4,8 @@ const validator = require("validator");
 const User = require("../Models/userModel");
 const Device = require("../Models/deviceModel");
 const Crop = require("../Models/CropModel");
-
+const SoilReading = require("../Models/Device-Sub/soilReadingModel");
+const LeafImage = require("../Models/Device-Sub/leafImages");
 // set profile image
 const setProfile = async (req, res) => {
   try {
@@ -147,8 +148,16 @@ const addDevice = async (req, res) => {
         { new: true }
       );
     }
-    const { _id, userId, createdAt, updatedAt, country, city, ...device } =
-      deviceData.toObject();
+    const {
+      _id,
+      userId,
+      createdAt,
+      updatedAt,
+      country,
+      cropId,
+      city,
+      ...device
+    } = deviceData.toObject();
     // add crop declaration right here ******
     return res.status(200).json({ ...device, location });
   } catch (error) {
@@ -238,17 +247,18 @@ const deleteDevice = async (req, res) => {
   }
 };
 
-// set a crop **************************
+// set a crop
 const setDeviceCrop = async (req, res) => {
   try {
     const { name, profile, deviceId } = req.body;
+    const userId = req.userId;
     if (!deviceId) {
-      return res.status.json({
+      return res.status(400).json({
         error: "Please select a device to edit",
       });
     }
     if (!name && !profile) {
-      return res.status.json({
+      return res.status(400).json({
         error: "Please fill at least 1 required field",
       });
     }
@@ -261,7 +271,7 @@ const setDeviceCrop = async (req, res) => {
       const profileBuffer = Buffer.from(profile, "base64");
       updateFields.profile = profileBuffer;
     }
-    const deviceData = await Device.findOne({ deviceId });
+    const deviceData = await Device.findOne({ deviceId, userId });
     if (!deviceData) {
       return res.status(400).json({ error: "Failed to set crop credtials" });
     }
@@ -273,10 +283,53 @@ const setDeviceCrop = async (req, res) => {
     if (!cropData) {
       return res.status(400).json({ error: "Failed to set crop credtials" });
     }
-    const { _id, ...crop } = cropData.toObject();
-    return res.status(200).json(crop);
+
+    const { soilReadings, leafImages } = cropData;
+
+    let includedFields = {};
+    if (leafImages) {
+      const recentLeafImage = await LeafImage.findById(
+        leafImages[leafImages.length - 1]
+      );
+      if (!recentLeafImage) {
+        return res.status(400).json({ error: "Failed to set crop credtials" });
+      }
+      const [recentCameraCollectionDate] =
+        cropData.cameraCollectionDate.slice(-1);
+
+      includedFields.recentCameraCollectionDate = recentCameraCollectionDate;
+      includedFields.recentLeafImage = recentLeafImage.image.toString("base64");
+    }
+    if (soilReadings) {
+      const recentSoilReading = await SoilReading.findById(
+        soilReadings[soilReadings.length - 1]
+      );
+      if (!recentSoilReading) {
+        return res.status(400).json({ error: "Failed to set crop credtials" });
+      }
+      const [recentSensorCollectionDate] =
+        cropData.sensorCollectionDate.slice(-1);
+
+      includedFields.recentSensorCollectionDate = recentSensorCollectionDate;
+      const {
+        _id,
+        userId,
+        createdAt,
+        updatedAt,
+        ...recentSoilReadingFiltered
+      } = recentSoilReading.toObject();
+      includedFields.recentSoilReading = recentSoilReadingFiltered;
+    }
+    return res.status(200).json({
+      crop: {
+        name: cropData.name,
+        profile: cropData.profile ? cropData.profile.toString("base64") : "",
+        ...includedFields,
+      },
+    });
   } catch (error) {
     return res.status(500).json({ error: error.message });
+    console.log(error);
   }
 };
 
@@ -288,4 +341,5 @@ module.exports = {
   addDevice,
   editDevice,
   deleteDevice,
+  setDeviceCrop,
 };

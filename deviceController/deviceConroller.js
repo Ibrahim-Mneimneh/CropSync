@@ -3,7 +3,8 @@ const validator = require("validator");
 const jwt = require("jsonwebtoken");
 const Device = require("../Models/deviceModel");
 const Crop = require("../Models/CropModel");
-
+const SoilReading = require("../Models/Device-Sub/soilReadingModel");
+const LeafImage = require("../Models/Device-Sub/leafImages");
 const createToken = (deviceId, cropId) => {
   return jwt.sign({ deviceId, cropId }, process.env.SECRET);
 };
@@ -48,9 +49,11 @@ const recieveLeafImage = async (req, res) => {
     // convert base 64 to buffer
     const leafImageBuffer = Buffer.from(leafImage, "base64");
 
+    const leafImg = await LeafImage.create({ image: leafImageBuffer }); // leafImage is already taken
+
     const updatedCrop = await Crop.findByIdAndUpdate(
       cropId,
-      { $push: { image: leafImageBuffer, cameraCollectionDate: Date.now() } },
+      { $push: { leafImages: leafImg._id, cameraCollectionDate: Date.now() } },
       { new: true }
     );
     if (!updatedCrop) {
@@ -81,17 +84,24 @@ const recieveSoilData = async (req, res) => {
           "Missing soil attribute. Make sure all attributes are collected.",
       });
     }
-
+    const soilReadings = await SoilReading.create({
+      nitrogen,
+      phosphorus,
+      potassium,
+      ph,
+      humidity,
+      temperature,
+    });
+    if (!soilReadings) {
+      return res
+        .status(400)
+        .json({ error: "Failed to recieve soil readings." });
+    }
     const updatedCrop = await Crop.findByIdAndUpdate(
       cropId,
       {
         $push: {
-          nitrogen,
-          phosphorus,
-          potassium,
-          ph,
-          humidity,
-          temperature,
+          soilReadings: soilReadings._id,
           sensorCollectionDate: Date.now(),
         },
       },

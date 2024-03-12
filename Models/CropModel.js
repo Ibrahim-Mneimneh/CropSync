@@ -10,25 +10,10 @@ const cropAuthSchema = new Schema(
     profile: {
       type: Buffer,
     },
-    nitrogen: {
-      type: Array,
-    },
-    phosphorus: {
-      type: Array,
-    },
-    potassium: {
-      type: String,
-    },
-    ph: {
-      type: Array,
-    },
-    humidity: {
-      type: Array,
-    },
-    temperature: {
-      type: Array,
-    },
-    image: [{ type: Buffer }],
+    soilReadings: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "soilReadings" },
+    ],
+    leafImages: [{ type: mongoose.Schema.Types.ObjectId, ref: "leafImages" }],
     sensorCollectionDate: [{ type: Date }],
     cameraCollectionDate: [{ type: Date }],
   },

@@ -17,10 +17,10 @@ const verifyDevice = async (req, res, next) => {
     const crop = await Crop.findById(cropId);
     //device exists
     if (!device) {
-      return res.status(403).json({ error: "UnAuthorized Access! 1" });
+      return res.status(403).json({ error: "UnAuthorized Access!" });
     }
     if (!crop) {
-      return res.status(403).json({ error: "UnAuthorized Access! 2" });
+      return res.status(403).json({ error: "UnAuthorized Access!" });
     }
     req.deviceId = device._id;
     req.cropId = device.cropId;
