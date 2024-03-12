@@ -321,11 +321,9 @@ const setDeviceCrop = async (req, res) => {
       includedFields.recentSoilReading = recentSoilReadingFiltered;
     }
     return res.status(200).json({
-      crop: {
-        name: cropData.name,
-        profile: cropData.profile ? cropData.profile.toString("base64") : "",
-        ...includedFields,
-      },
+      name: cropData.name,
+      profile: cropData.profile ? cropData.profile.toString("base64") : "",
+      ...includedFields,
     });
   } catch (error) {
     return res.status(500).json({ error: error.message });
