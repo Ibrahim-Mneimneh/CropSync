@@ -268,8 +268,7 @@ const setDeviceCrop = async (req, res) => {
     }
 
     if (profile) {
-      const profileBuffer = Buffer.from(profile, "base64");
-      updateFields.profile = profileBuffer;
+      updateFields.profile = profile;
     }
     const deviceData = await Device.findOne({ deviceId, userId });
     if (!deviceData) {
@@ -281,7 +280,7 @@ const setDeviceCrop = async (req, res) => {
       { new: true }
     );
     if (!cropData) {
-      return res.status(400).json({ error: "Failed to set crop credtials" });
+      return res.status(400).json({ error: "Failed to set crop credentials" });
     }
 
     const { soilReadings, leafImages } = cropData;
@@ -329,6 +328,148 @@ const setDeviceCrop = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
+//Implement Pagination
+const getDeviceImages = async (req, res) => {
+  try {
+    const { deviceId } = req.body;
+    const { page = 1, limit = 10 } = req.query;
+    const userId = req.userId;
+    if (!deviceId) {
+      return res.status(400).json({
+        error: "Please select a device to edit",
+      });
+    }
+    if (isNaN(parseInt(page)) || page < 1) {
+      return res.status(400).json({
+        error: "Page number must be a positive integer",
+      });
+    }
+
+    if (isNaN(parseInt(limit)) || limit < 1) {
+      return res.status(400).json({
+        error: "Limit must be a positive integer",
+      });
+    }
+    const deviceData = await Device.findOne({ deviceId, userId });
+    if (!deviceData) {
+      return res.status(400).json({ error: "Failed to set crop credtials" });
+    }
+    const cropData = await Crop.findByIdAndUpdate(deviceData.cropId);
+    const startIndex = (page - 1) * limit;
+    const totalImages = cropData.leafImages.length;
+    const endIndex = Math.min(startIndex + limit, totalImages);
+    const imageBatchIds = cropData.leafImages.slice(startIndex, endIndex);
+
+    const imageBatch = await Promise.all(
+      imageBatchIds.map(async (imageId) => {
+        const imageData = await LeafImage.findById(imageId);
+        return imageData.image.toString("base64");
+      })
+    );
+    return res.status(200).json({
+      images: imageBatch,
+      pagination: {
+        totalImages,
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(totalImages / limit),
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+// Set the timing for soil readings and camera images along with the size of the images sou want
+const setDeviceTimer = async (req, res) => {
+  try {
+    const { imageFrequency, soilFrequency, deviceId } = req.body;
+    if (!deviceId) {
+      return res.status(400).json({ error: "Please select a device" });
+    }
+    if (!imageFrequency && !soilFrequency) {
+      return res
+        .status(400)
+        .json({ error: "Please select a device's reading frequency" });
+    }
+    let updateFields = {};
+    if (soilFrequency) {
+      // set the formatting of the data to save it ******
+      if (soilFrequency) {
+      }
+    }
+    if (imageFrequency) {
+      if (imageFrequency) {
+      }
+    }
+    const updatedDeviceData = await Device.findOneAndUpdate(
+      {
+        deviceId,
+        userId: req.userId,
+      },
+      updateFields,
+      { new: true }
+    );
+    if (!updatedDeviceData) {
+      return res.status(404).json({ error: "Device not found" });
+    }
+    const { _id, userId, createdAt, updatedAt, ...updatedDevice } =
+      updatedDeviceData.toObject();
+    return res.status(200).json({ ...updatedDevice });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+// Graph Visual Data
+
+// Get Most Recent device Image (Ig)
+
+// Adjust the date and time of the server with its host
+
+// Add the link to Gemini to get the tips on how to treat the leaf
+
+// Check if we can deploy the model on the mobile and make predictions offline
+
+// Add the get most recent readings
+const getRecentSoilData = async (req, res) => {
+  try {
+    const { deviceId } = req.body;
+    if (!deviceId) {
+      return res.status(400).json({
+        error: "Please select a device to edit",
+      });
+    }
+    const deviceData = await Device.findOne({ deviceId, userId: req.userId });
+    if (!deviceData) {
+      return res.status(400).json({ error: "Failed to set crop credtials" });
+    }
+    const cropData = await Crop.findOne(deviceData.cropId);
+    const { soilReadings, sensorCollectionDate } = cropData;
+    if (!soilReadings || !sensorCollectionDate) {
+      return res
+        .status(404)
+        .json({ error: "Please make sure your sensor is connected" });
+    }
+    const recentSoilReading = await SoilReading.findById(
+      soilReadings[soilReadings.length - 1]
+    );
+    if (!recentSoilReading) {
+      return res.status(400).json({ error: "Failed to set crop credtials" });
+    }
+    const [recentSensorCollectionDate] =
+      cropData.sensorCollectionDate.slice(-1);
+
+    return res.status(200).json({ ...recentSoilReading });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Add the prediction to the crop related data ( eg:"status":"diseased" )
+
+// Add the recommend and Optimise features ( We'll figure it how when we start)
+
+// Change setCrop (remove the most recent and make them in another api, the profile is an url)
+
+// Rain-meter from API
 
 module.exports = {
   setProfile,
@@ -339,4 +480,5 @@ module.exports = {
   editDevice,
   deleteDevice,
   setDeviceCrop,
+  getDeviceImages,
 };

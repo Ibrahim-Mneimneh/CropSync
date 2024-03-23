@@ -42,18 +42,20 @@ const connectDevice = async (req, res) => {
 const recieveLeafImage = async (req, res) => {
   try {
     const cropId = req.cropId;
-    const { leafImage } = req.body;
-    if (!leafImage) {
-      return res.status(400).json({ error: "Please add a leaf image" });
+    const { leafImage, timeStamps } = req.body;
+    if (!leafImage || !timeStamps) {
+      return res
+        .status(400)
+        .json({ error: "Please add a leaf image with timestamps" });
     }
     // convert base 64 to buffer
     const leafImageBuffer = Buffer.from(leafImage, "base64");
 
     const leafImg = await LeafImage.create({ image: leafImageBuffer }); // leafImage is already taken
-
+    const cameraCollectionDate = new Date(timeStamps);
     const updatedCrop = await Crop.findByIdAndUpdate(
       cropId,
-      { $push: { leafImages: leafImg._id, cameraCollectionDate: Date.now() } },
+      { $push: { leafImages: leafImg._id, cameraCollectionDate } },
       { new: true }
     );
     if (!updatedCrop) {
@@ -69,15 +71,23 @@ const recieveLeafImage = async (req, res) => {
 const recieveSoilData = async (req, res) => {
   try {
     const cropId = req.cropId;
-    const { nitrogen, phosphorus, potassium, ph, humidity, temperature } =
-      req.body;
+    const {
+      nitrogen,
+      phosphorus,
+      potassium,
+      ph,
+      humidity,
+      temperature,
+      timeStamps,
+    } = req.body;
     if (
       !nitrogen ||
       !phosphorus ||
       !potassium ||
       !ph ||
       !humidity ||
-      !temperature
+      !temperature ||
+      !timeStamps
     ) {
       return res.status(400).json({
         error:
@@ -92,6 +102,7 @@ const recieveSoilData = async (req, res) => {
       humidity,
       temperature,
     });
+    const sensorCollectionDate = new Date(timeStamps);
     if (!soilReadings) {
       return res
         .status(400)
@@ -102,7 +113,7 @@ const recieveSoilData = async (req, res) => {
       {
         $push: {
           soilReadings: soilReadings._id,
-          sensorCollectionDate: Date.now(),
+          sensorCollectionDate,
         },
       },
       { new: true }

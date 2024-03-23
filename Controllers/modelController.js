@@ -4,7 +4,7 @@ const isHealthy = async (req, res) => {
     if (!base64Image) {
       return res.status(400).json({ error: "Please select an image to scan" });
     }
-    const response = await fetch("http://172.33.133.137:5000/predict", {
+    const response = await fetch("http://127.0.0.1:8000/predict/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
