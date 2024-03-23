@@ -457,7 +457,12 @@ const getRecentSoilData = async (req, res) => {
     const [recentSensorCollectionDate] =
       cropData.sensorCollectionDate.slice(-1);
 
-    return res.status(200).json({ ...recentSoilReading });
+    return res
+      .status(200)
+      .json({
+        ...recentSoilReading,
+        sensorCollectionDate: recentSensorCollectionDate,
+      });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
