@@ -436,7 +436,7 @@ const setDeviceTimer = async (req, res) => {
 // change setDeviceCrop to exclude the most recent image and reading
 const getRecentSoilData = async (req, res) => {
   try {
-    const { deviceId } = req.body;
+    const deviceId = req.params.deviceId;
     if (!deviceId) {
       return res.status(400).json({
         error: "Please select a device to edit",
@@ -474,6 +474,61 @@ const getRecentSoilData = async (req, res) => {
   }
 };
 
+const getRecentDevicesImage = async (req, res) => {
+  try {
+    const devicesData = await Device.find({ userId: req.userId });
+    if (!devicesData || devicesData.length === 0) {
+      return res.status(400).json({ error: "Failed to get crop credentials" });
+    }
+
+    const recentImages = await Promise.all(
+      devicesData.map(async (deviceData) => {
+        const cropData = await Crop.findById(deviceData.cropId);
+        if (
+          !cropData ||
+          !cropData.leafImages ||
+          !cropData.cameraCollectionDate
+        ) {
+          return {
+            deviceId: deviceData.deviceId,
+            name: deviceData.name,
+            error: "Please make sure your sensor is connected",
+          };
+        }
+
+        const recentLeafImageId =
+          cropData.leafImages[cropData.leafImages.length - 1];
+        const recentLeafImage = await LeafImage.findById(recentLeafImageId);
+        if (!recentLeafImage) {
+          return {
+            deviceId: deviceData.deviceId,
+            name: deviceData.name,
+            error: "No readings collected",
+          };
+        }
+
+        const recentCameraCollectionDate =
+          cropData.cameraCollectionDate[
+            cropData.cameraCollectionDate.length - 1
+          ];
+        const { _id, ...recentLeafImageReadingModified } =
+          recentLeafImage.toObject();
+
+        return {
+          deviceId: deviceData.deviceId,
+          name: deviceData.name,
+          cameraCollectionDate: recentCameraCollectionDate,
+          ...recentLeafImageReadingModified,
+        };
+      })
+    );
+
+    return res.status(200).json(recentImages);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // Add the prediction to the crop related data ( eg:"status":"diseased" )
 
 // Add the recommend and Optimise features ( We'll figure it how when we start)
@@ -494,4 +549,5 @@ module.exports = {
   getDeviceImages,
   getRecentSoilData,
   getDeviceImages,
+  getRecentDevicesImage,
 };
