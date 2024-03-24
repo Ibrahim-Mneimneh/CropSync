@@ -71,7 +71,7 @@ const recieveLeafImage = async (req, res) => {
 const recieveSoilData = async (req, res) => {
   try {
     const cropId = req.cropId;
-    const {
+    /*const {
       nitrogen,
       phosphorus,
       potassium,
@@ -93,7 +93,31 @@ const recieveSoilData = async (req, res) => {
         error:
           "Missing soil attribute. Make sure all attributes are collected.",
       });
+    }*/
+    if (
+      !("temperature" in req.body) ||
+      !("humidity" in req.body) ||
+      !("ph" in req.body) ||
+      !("nitrogen" in req.body) ||
+      !("phosphorus" in req.body) ||
+      !("potassium" in req.body) ||
+      !("timeStamps" in req.body)
+    ) {
+      return res.status(400).json({
+        error:
+          "Missing soil attribute. Make sure all attributes are collected.",
+      });
     }
+    const {
+      nitrogen,
+      phosphorus,
+      potassium,
+      ph,
+      humidity,
+      temperature,
+      timeStamps,
+    } = req.body;
+
     const soilReadings = await SoilReading.create({
       nitrogen,
       phosphorus,
