@@ -27,6 +27,7 @@ const {
   editDevice,
   setDeviceCrop,
   getRecentSoilData,
+  getDeviceImages,
 } = require("../Controllers/userController-2");
 const { isHealthy, recommendCrop } = require("../Controllers/modelController");
 const router = express.Router();
@@ -53,6 +54,7 @@ router.use("/leaf/state", verifyUser);
 router.use("/set/crop", verifyUser);
 router.use("/recommend/crop", verifyUser);
 router.use("/device/soil/reading", verifyUser);
+router.use("/:deviceId/images", verifyUser);
 
 router.post("/ResetPassword", resetPassword);
 router.get("/Request/DeleteAccount", deleteAccountRequest);
@@ -72,5 +74,6 @@ router.post("/leaf/state", isHealthy);
 router.post("/set/crop", setDeviceCrop);
 router.get("/recommend/crop", recommendCrop);
 router.get("/device/soil/reading", getRecentSoilData);
+router.get("/:deviceId/images", getDeviceImages);
 
 module.exports = router;

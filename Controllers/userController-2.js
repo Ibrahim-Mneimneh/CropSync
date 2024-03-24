@@ -331,8 +331,8 @@ const setDeviceCrop = async (req, res) => {
 //Implement Pagination
 const getDeviceImages = async (req, res) => {
   try {
-    const { deviceId } = req.body;
-    const { page = 1, limit = 10 } = req.query;
+    const deviceId = req.params.deviceId;
+    const { page = 1, limit = 5 } = req.query;
     const userId = req.userId;
     if (!deviceId) {
       return res.status(400).json({
@@ -359,7 +359,10 @@ const getDeviceImages = async (req, res) => {
     const totalImages = cropData.leafImages.length;
     const endIndex = Math.min(startIndex + limit, totalImages);
     const imageBatchIds = cropData.leafImages.slice(startIndex, endIndex);
-
+    const imageBatchDates = cropData.cameraCollectionDate.slice(
+      startIndex,
+      endIndex
+    );
     const imageBatch = await Promise.all(
       imageBatchIds.map(async (imageId) => {
         const imageData = await LeafImage.findById(imageId);
@@ -368,6 +371,7 @@ const getDeviceImages = async (req, res) => {
     );
     return res.status(200).json({
       images: imageBatch,
+      cameraCollectionDate: imageBatchDates,
       pagination: {
         totalImages,
         currentPage: parseInt(page),
@@ -429,6 +433,7 @@ const setDeviceTimer = async (req, res) => {
 // Check if we can deploy the model on the mobile and make predictions offline
 
 // Add the get most recent readings
+// change setDeviceCrop to exclude the most recent image and reading
 const getRecentSoilData = async (req, res) => {
   try {
     const { deviceId } = req.body;
@@ -488,4 +493,5 @@ module.exports = {
   setDeviceCrop,
   getDeviceImages,
   getRecentSoilData,
+  getDeviceImages,
 };
