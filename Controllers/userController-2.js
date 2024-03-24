@@ -441,7 +441,7 @@ const getRecentSoilData = async (req, res) => {
     if (!deviceData) {
       return res.status(400).json({ error: "Failed to set crop credtials" });
     }
-    const cropData = await Crop.findOne(deviceData.cropId);
+    const cropData = await Crop.findByIdAndUpdate(deviceData.cropId);
     const { soilReadings, sensorCollectionDate } = cropData;
     if (!soilReadings || !sensorCollectionDate) {
       return res
@@ -457,12 +457,13 @@ const getRecentSoilData = async (req, res) => {
     const [recentSensorCollectionDate] =
       cropData.sensorCollectionDate.slice(-1);
 
-    return res
-      .status(200)
-      .json({
-        ...recentSoilReading,
-        sensorCollectionDate: recentSensorCollectionDate,
-      });
+    const { _id, ...recentSoilReadingModified } = recentSoilReading.toObject();
+    return res.status(200).json({
+      deviceId,
+      name: deviceData.name,
+      sensorCollectionDate: recentSensorCollectionDate,
+      ...recentSoilReadingModified,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -486,4 +487,5 @@ module.exports = {
   deleteDevice,
   setDeviceCrop,
   getDeviceImages,
+  getRecentSoilData,
 };

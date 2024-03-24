@@ -26,8 +26,9 @@ const {
   getProfile,
   editDevice,
   setDeviceCrop,
+  getRecentSoilData,
 } = require("../Controllers/userController-2");
-const { isHealthy } = require("../Controllers/modelController");
+const { isHealthy, recommendCrop } = require("../Controllers/modelController");
 const router = express.Router();
 
 router.post("/login", loginUser);
@@ -50,6 +51,8 @@ router.use("/daily/weather", verifyUser);
 router.use("/weather/forecast/:num", verifyUser);
 router.use("/leaf/state", verifyUser);
 router.use("/set/crop", verifyUser);
+router.use("/recommend/crop", verifyUser);
+router.use("/device/soil/reading", verifyUser);
 
 router.post("/ResetPassword", resetPassword);
 router.get("/Request/DeleteAccount", deleteAccountRequest);
@@ -67,5 +70,7 @@ router.get("/daily/weather", getDailyWeather);
 router.get("/weather/forecast/:num", getWeeklyWeather);
 router.post("/leaf/state", isHealthy);
 router.post("/set/crop", setDeviceCrop);
+router.get("/recommend/crop", recommendCrop);
+router.get("/device/soil/reading", getRecentSoilData);
 
 module.exports = router;
