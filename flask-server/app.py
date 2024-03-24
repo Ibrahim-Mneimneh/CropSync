@@ -1,4 +1,6 @@
 import os 
+import pickle
+import sklearn.exceptions
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 from flask import Flask, request, jsonify
 import tensorflow as tf
@@ -25,10 +27,26 @@ def loadResNet():
     except ValueError as e:
         print("Error: Model is incompatible or corrupt")
 
+def loadRandomForest():
+    model_path = r"C:\Users\Ibrahim Mneimneh\Desktop\MyFolder\GitHub\CropSync\flask-server\randomForest.pkl"  
+    try:
+        with open(model_path, 'rb') as f:
+            randomForest = pickle.load(f)
+        return randomForest
+    except FileNotFoundError as e:
+        print(f"Model file '{model_path}' not found: {e}")
+        return None
+    except (pickle.UnpicklingError, ValueError) as e:
+        print(f"Error loading Random Forest model: {e}")
+        return None
+    except Exception as e:
+        print(f"Unexpected error occurred while loading Random Forest model: {e}")
+        return None
 
 
 app = Flask(__name__) 
-model = loadResNet()
+#model = loadResNet()
+rf = loadRandomForest()
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -63,6 +81,37 @@ def predict():
     result=class_labels[predicted_class_label]
     print("Result:", result)
     return jsonify(result)
+ 
+@app.route('/recommend', methods=['POST'])
+def recommend():
+    global rf  # Access the model defined outside this function
+    if rf is None:
+        return jsonify({"error": "Random Forest cannot be loaded"})
 
+    data = request.get_json()  # Get the data
+    
+    # Acquire the soil readings
+    soilReadings = data.get('soilReading', None)
+    
+    if soilReadings is None:
+        return jsonify({"error": "Soil readings not provided"})
+    
+    # Extract individual parameters
+    nitrogen = soilReadings.get('nitrogen', None)
+    phosphorus = soilReadings.get('phosphorus', None)
+    potassium = soilReadings.get('potassium', None)
+    ph = soilReadings.get('ph', None)
+    humidity = soilReadings.get('humidity', None)
+    temperature = soilReadings.get('temperature', None)
+    rainfall = soilReadings.get('rainfall', None)
+    # Check if any parameter is missing
+    if None in (nitrogen, phosphorus, potassium, ph, humidity, temperature):
+        return jsonify({"error": "Some soil parameters are missing"})
+    input_data = np.array([[nitrogen, phosphorus, potassium, temperature, humidity, ph, rainfall]])
+    result =rf.predict(input_data)
+    print("Result:", result)
+    return jsonify(result)
+
+ 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000) 
