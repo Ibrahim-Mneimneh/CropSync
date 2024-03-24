@@ -439,7 +439,7 @@ const getRecentSoilData = async (req, res) => {
     }
     const deviceData = await Device.findOne({ deviceId, userId: req.userId });
     if (!deviceData) {
-      return res.status(400).json({ error: "Failed to set crop credtials" });
+      return res.status(400).json({ error: "Failed to get crop credtials" });
     }
     const cropData = await Crop.findByIdAndUpdate(deviceData.cropId);
     const { soilReadings, sensorCollectionDate } = cropData;
@@ -452,7 +452,7 @@ const getRecentSoilData = async (req, res) => {
       soilReadings[soilReadings.length - 1]
     );
     if (!recentSoilReading) {
-      return res.status(400).json({ error: "Failed to set crop credtials" });
+      return res.status(400).json({ error: "No readings collected" });
     }
     const [recentSensorCollectionDate] =
       cropData.sensorCollectionDate.slice(-1);
