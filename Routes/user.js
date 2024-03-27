@@ -78,4 +78,5 @@ router.get("/recommend/crop", recommendCrop);
 router.get("/:deviceId/soil/reading", getRecentSoilData);
 router.get("/:deviceId/images", getDeviceImages);
 router.get("/devices/image", getRecentDevicesImage);
+
 module.exports = router;

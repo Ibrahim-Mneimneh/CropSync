@@ -517,6 +517,8 @@ const getRecentDevicesImage = async (req, res) => {
         return {
           deviceId: deviceData.deviceId,
           name: deviceData.name,
+          location: deviceData.city + ", " + deviceData.country,
+          cropName: cropData.name,
           cameraCollectionDate: recentCameraCollectionDate,
           ...recentLeafImageReadingModified,
         };
