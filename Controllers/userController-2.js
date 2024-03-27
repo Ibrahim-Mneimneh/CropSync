@@ -102,6 +102,7 @@ const getDevices = async (req, res) => {
           code: deviceData.code,
           crop: {
             name: crop.name ? crop.name : null,
+            profile: crop.profile ? crop.profile : null,
           },
         };
         return device;
