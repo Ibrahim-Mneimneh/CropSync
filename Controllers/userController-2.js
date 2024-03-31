@@ -100,6 +100,8 @@ const getDevices = async (req, res) => {
           name: deviceData.name,
           isConnected: deviceData.isConnected,
           code: deviceData.code,
+          imageFrequency: deviceData.imageFrequency,
+          soilFrequency: deviceData.soilFrequency,
           crop: {
             name: crop.name ? crop.name : null,
             profile: crop.profile ? crop.profile : null,
@@ -359,11 +361,10 @@ const getDeviceImages = async (req, res) => {
     const startIndex = (page - 1) * limit;
     const totalImages = cropData.leafImages.length;
     const endIndex = Math.min(startIndex + limit, totalImages);
-    const imageBatchIds = cropData.leafImages.slice(startIndex, endIndex);
-    const imageBatchDates = cropData.cameraCollectionDate.slice(
-      startIndex,
-      endIndex
-    );
+    const leafImages = cropData.leafImages.reverse();
+    const cameraCollectionDates = cropData.cameraCollectionDate.reverse();
+    const imageBatchIds = leafImages.slice(startIndex, endIndex);
+    const imageBatchDates = cameraCollectionDates.slice(startIndex, endIndex);
     const imageBatch = await Promise.all(
       imageBatchIds.map(async (imageId) => {
         const imageData = await LeafImage.findById(imageId);
