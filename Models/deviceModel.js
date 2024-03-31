@@ -22,6 +22,12 @@ const deviceSchema = new Schema(
       type: String,
     },
     code: { type: String },
+    imageFrequency: {
+      type: Number,
+    },
+    soilFrequency: {
+      type: Number,
+    },
   },
   { timestamps: true }
 );

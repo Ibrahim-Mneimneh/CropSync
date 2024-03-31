@@ -29,6 +29,7 @@ const {
   getRecentSoilData,
   getDeviceImages,
   getRecentDevicesImage,
+  setDeviceFrequency,
 } = require("../Controllers/userController-2");
 const { isHealthy, recommendCrop } = require("../Controllers/modelController");
 const router = express.Router();
@@ -57,6 +58,7 @@ router.use("/recommend/crop", verifyUser);
 router.use("/:deviceId/soil/reading", verifyUser);
 router.use("/:deviceId/images", verifyUser);
 router.use("/devices/image", verifyUser);
+router.use("/:deviceId/frequency", verifyUser);
 
 router.post("/ResetPassword", resetPassword);
 router.get("/Request/DeleteAccount", deleteAccountRequest);
@@ -78,5 +80,6 @@ router.get("/recommend/crop", recommendCrop);
 router.get("/:deviceId/soil/reading", getRecentSoilData);
 router.get("/:deviceId/images", getDeviceImages);
 router.get("/devices/image", getRecentDevicesImage);
+router.patch("/:deviceId/frequency", setDeviceFrequency);
 
 module.exports = router;

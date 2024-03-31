@@ -384,9 +384,19 @@ const getDeviceImages = async (req, res) => {
   }
 };
 // Set the timing for soil readings and camera images along with the size of the images sou want
-const setDeviceTimer = async (req, res) => {
+const setDeviceFrequency = async (req, res) => {
   try {
-    const { imageFrequency, soilFrequency, deviceId } = req.body;
+    const frequency = [
+      { id: 1, label: "6-hour", value: 21600 },
+      { id: 2, label: "12-hour", value: 43200 },
+      { id: 3, label: "One Day", value: 86400 },
+      { id: 4, label: "Three Days", value: 259200 },
+      { id: 5, label: "One Week", value: 604800 },
+      { id: 6, label: "Two Weeks", value: 1209600 },
+      { id: 7, label: "Monthly", value: 2592000 },
+    ];
+    const deviceId = req.params.deviceId;
+    let { imageFrequency, soilFrequency } = req.body;
     if (!deviceId) {
       return res.status(400).json({ error: "Please select a device" });
     }
@@ -396,15 +406,33 @@ const setDeviceTimer = async (req, res) => {
         .json({ error: "Please select a device's reading frequency" });
     }
     let updateFields = {};
+
     if (soilFrequency) {
-      // set the formatting of the data to save it ******
-      if (soilFrequency) {
+      if (
+        typeof soilFrequency === "number" &&
+        soilFrequency >= 1 &&
+        soilFrequency <= 7
+      ) {
+        soilFrequency = frequency[soilFrequency - 1].value;
+        updateFields.soilFrequency = soilFrequency;
+      } else {
+        return res.status(400).json({ error: "Invalid Frequency format" });
       }
     }
+
     if (imageFrequency) {
-      if (imageFrequency) {
+      if (
+        typeof imageFrequency === "number" &&
+        imageFrequency >= 1 &&
+        imageFrequency <= 7
+      ) {
+        imageFrequency = frequency[imageFrequency - 1].value;
+        updateFields.imageFrequency = imageFrequency;
+      } else {
+        return res.status(400).json({ error: "Invalid Frequency format" });
       }
     }
+
     const updatedDeviceData = await Device.findOneAndUpdate(
       {
         deviceId,
@@ -416,25 +444,14 @@ const setDeviceTimer = async (req, res) => {
     if (!updatedDeviceData) {
       return res.status(404).json({ error: "Device not found" });
     }
-    const { _id, userId, createdAt, updatedAt, ...updatedDevice } =
+    const { _id, userId, createdAt, updatedAt, cropId, ...updatedDevice } =
       updatedDeviceData.toObject();
     return res.status(200).json({ ...updatedDevice });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
 };
-// Graph Visual Data
 
-// Get Most Recent device Image (Ig)
-
-// Adjust the date and time of the server with its host
-
-// Add the link to Gemini to get the tips on how to treat the leaf
-
-// Check if we can deploy the model on the mobile and make predictions offline
-
-// Add the get most recent readings
-// change setDeviceCrop to exclude the most recent image and reading
 const getRecentSoilData = async (req, res) => {
   try {
     const deviceId = req.params.deviceId;
@@ -531,6 +548,15 @@ const getRecentDevicesImage = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+// Graph Visual Data
+
+// Adjust the date and time of the server with its host
+
+// Add the link to Gemini to get the tips on how to treat the leaf
+
+// Check if we can deploy the model on the mobile and make predictions offline
+
+// change setDeviceCrop to exclude the most recent image and reading
 
 // Add the prediction to the crop related data ( eg:"status":"diseased" )
 
@@ -553,4 +579,5 @@ module.exports = {
   getRecentSoilData,
   getDeviceImages,
   getRecentDevicesImage,
+  setDeviceFrequency,
 };
