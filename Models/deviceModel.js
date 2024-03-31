@@ -24,10 +24,13 @@ const deviceSchema = new Schema(
     code: { type: String },
     imageFrequency: {
       type: Number,
+      default: 21600,
     },
     soilFrequency: {
       type: Number,
+      default: 21600,
     },
+    frequencyFlag: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

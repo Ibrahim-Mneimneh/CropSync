@@ -8,7 +8,7 @@ const cropAuthSchema = new Schema(
       default: null,
     },
     profile: {
-      type: Buffer,
+      type: String,
     },
     soilReadings: [
       { type: mongoose.Schema.Types.ObjectId, ref: "soilReadings" },

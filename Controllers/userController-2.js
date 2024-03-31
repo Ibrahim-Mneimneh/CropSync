@@ -102,7 +102,7 @@ const getDevices = async (req, res) => {
           code: deviceData.code,
           crop: {
             name: crop.name ? crop.name : null,
-            profile: crop.profile ? crop.profile.toString("base64") : null,
+            profile: crop.profile ? crop.profile : null,
           },
         };
         return device;
@@ -386,15 +386,6 @@ const getDeviceImages = async (req, res) => {
 // Set the timing for soil readings and camera images along with the size of the images sou want
 const setDeviceFrequency = async (req, res) => {
   try {
-    const frequency = [
-      { id: 1, label: "6-hour", value: 21600 },
-      { id: 2, label: "12-hour", value: 43200 },
-      { id: 3, label: "One Day", value: 86400 },
-      { id: 4, label: "Three Days", value: 259200 },
-      { id: 5, label: "One Week", value: 604800 },
-      { id: 6, label: "Two Weeks", value: 1209600 },
-      { id: 7, label: "Monthly", value: 2592000 },
-    ];
     const deviceId = req.params.deviceId;
     let { imageFrequency, soilFrequency } = req.body;
     if (!deviceId) {
@@ -413,7 +404,6 @@ const setDeviceFrequency = async (req, res) => {
         soilFrequency >= 1 &&
         soilFrequency <= 7
       ) {
-        soilFrequency = frequency[soilFrequency - 1].value;
         updateFields.soilFrequency = soilFrequency;
       } else {
         return res.status(400).json({ error: "Invalid Frequency format" });
@@ -426,13 +416,12 @@ const setDeviceFrequency = async (req, res) => {
         imageFrequency >= 1 &&
         imageFrequency <= 7
       ) {
-        imageFrequency = frequency[imageFrequency - 1].value;
         updateFields.imageFrequency = imageFrequency;
       } else {
         return res.status(400).json({ error: "Invalid Frequency format" });
       }
     }
-
+    updateFields.frequencyFlag = true;
     const updatedDeviceData = await Device.findOneAndUpdate(
       {
         deviceId,

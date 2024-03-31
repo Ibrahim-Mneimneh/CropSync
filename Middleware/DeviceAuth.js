@@ -22,6 +22,7 @@ const verifyDevice = async (req, res, next) => {
     if (!crop) {
       return res.status(403).json({ error: "UnAuthorized Access!" });
     }
+    req.frequencyFlag = device.frequencyFlag;
     req.deviceId = device._id;
     req.cropId = device.cropId;
     next();

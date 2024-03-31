@@ -61,8 +61,9 @@ const recieveLeafImage = async (req, res) => {
     if (!updatedCrop) {
       return res.status(400).json({ error: "Failed to recieve image." });
     }
-
-    return res.status(200).json({ result: "success" });
+    return res
+      .status(200)
+      .json({ result: "success", frequencyFlag: req.frequencyFlag });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -71,29 +72,7 @@ const recieveLeafImage = async (req, res) => {
 const recieveSoilData = async (req, res) => {
   try {
     const cropId = req.cropId;
-    /*const {
-      nitrogen,
-      phosphorus,
-      potassium,
-      ph,
-      humidity,
-      temperature,
-      timeStamps,
-    } = req.body;
-    if (
-      !nitrogen ||
-      !phosphorus ||
-      !potassium ||
-      !ph ||
-      !humidity ||
-      !temperature ||
-      !timeStamps
-    ) {
-      return res.status(400).json({
-        error:
-          "Missing soil attribute. Make sure all attributes are collected.",
-      });
-    }*/
+    const deviceId = req.deviceId;
     if (
       !("temperature" in req.body) ||
       !("humidity" in req.body) ||
@@ -147,7 +126,41 @@ const recieveSoilData = async (req, res) => {
         .status(400)
         .json({ error: "Failed to recieve soil readings." });
     }
-    return res.status(200).json({ result: "success" });
+    return res
+      .status(200)
+      .json({ result: "success", frequencyFlag: req.frequencyFlag });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+const getUpdatedFrequency = async (req, res) => {
+  try {
+    const frequency = [
+      { id: 1, label: "6-hour", value: 21600 },
+      { id: 2, label: "12-hour", value: 43200 },
+      { id: 3, label: "One Day", value: 86400 },
+      { id: 4, label: "Three Days", value: 259200 },
+      { id: 5, label: "One Week", value: 604800 },
+      { id: 6, label: "Two Weeks", value: 1209600 },
+      { id: 7, label: "Monthly", value: 2592000 },
+    ];
+    const deviceId = req.deviceId;
+    //Reset the frequency flag and get the data
+    const updatedDevice = await Device.findByIdAndUpdate(
+      deviceId,
+      {
+        frequencyFlag: false,
+      },
+      { new: true }
+    );
+    if (!updatedDevice) {
+      return res.status(400).json({ error: "Failed to update flag." });
+    }
+    return res.status(200).json({
+      soilFrequency: frequency[updatedDevice.soilFrequency - 1].value,
+      imageFrequency: frequency[updatedDevice.imageFrequency - 1].value,
+    });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -157,4 +170,5 @@ module.exports = {
   connectDevice,
   recieveLeafImage,
   recieveSoilData,
+  getUpdatedFrequency,
 };
