@@ -102,7 +102,7 @@ const getDevices = async (req, res) => {
           code: deviceData.code,
           crop: {
             name: crop.name ? crop.name : null,
-            profile: crop.profile ? crop.profile : null,
+            profile: crop.profile ? crop.profile.toString("base64") : null,
           },
         };
         return device;
@@ -521,6 +521,8 @@ const getRecentDevicesImage = async (req, res) => {
           return {
             deviceId: deviceData.deviceId,
             name: deviceData.name,
+            location: deviceData.city + ", " + deviceData.country,
+            cropName: cropData.name,
             error: "No readings collected",
           };
         }
@@ -542,7 +544,6 @@ const getRecentDevicesImage = async (req, res) => {
         };
       })
     );
-
     return res.status(200).json(recentImages);
   } catch (error) {
     res.status(500).json({ error: error.message });
