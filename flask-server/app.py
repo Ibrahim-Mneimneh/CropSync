@@ -11,10 +11,14 @@ import numpy as np
 import base64
 from PIL import Image
 from io import BytesIO
+
 print("Current Working Directory:", os.getcwd())
+
 def loadResNet():
+    # Get the current working directory
+    cwd = os.getcwd()
     # Model file path
-    model_path = r"C:\Users\Ibrahim Mneimneh\Desktop\MyFolder\GitHub\CropSync\flask-server\ResNet-classes2"
+    model_path = os.path.join(cwd, "ResNet-classes2")
 
     try:
         # Load the model
@@ -28,7 +32,9 @@ def loadResNet():
         print("Error: Model is incompatible or corrupt")
 
 def loadRandomForest():
-    model_path = r"C:\Users\Ibrahim Mneimneh\Desktop\MyFolder\GitHub\CropSync\flask-server\randomForest.pkl"  
+    # Get the current working directory
+    cwd = os.getcwd()
+    model_path = os.path.join(cwd, "randomForest.pkl")
     try:
         with open(model_path, 'rb') as f:
             randomForest = pickle.load(f)
