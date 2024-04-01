@@ -277,55 +277,19 @@ const setDeviceCrop = async (req, res) => {
     if (!deviceData) {
       return res.status(400).json({ error: "Failed to set crop credtials" });
     }
-    const cropData = await Crop.findByIdAndUpdate(
+    const updatedCropData = await Crop.findByIdAndUpdate(
       deviceData.cropId,
       updateFields,
       { new: true }
     );
-    if (!cropData) {
+    if (!updatedCropData) {
       return res.status(400).json({ error: "Failed to set crop credentials" });
     }
-
-    const { soilReadings, leafImages } = cropData;
-
-    let includedFields = {};
-    if (leafImages) {
-      const recentLeafImage = await LeafImage.findById(
-        leafImages[leafImages.length - 1]
-      );
-      if (!recentLeafImage) {
-        return res.status(400).json({ error: "Failed to set crop credtials" });
-      }
-      const [recentCameraCollectionDate] =
-        cropData.cameraCollectionDate.slice(-1);
-
-      includedFields.recentCameraCollectionDate = recentCameraCollectionDate;
-      includedFields.recentLeafImage = recentLeafImage.image.toString("base64");
-    }
-    if (soilReadings) {
-      const recentSoilReading = await SoilReading.findById(
-        soilReadings[soilReadings.length - 1]
-      );
-      if (!recentSoilReading) {
-        return res.status(400).json({ error: "Failed to set crop credtials" });
-      }
-      const [recentSensorCollectionDate] =
-        cropData.sensorCollectionDate.slice(-1);
-
-      includedFields.recentSensorCollectionDate = recentSensorCollectionDate;
-      const {
-        _id,
-        userId,
-        createdAt,
-        updatedAt,
-        ...recentSoilReadingFiltered
-      } = recentSoilReading.toObject();
-      includedFields.recentSoilReading = recentSoilReadingFiltered;
-    }
     return res.status(200).json({
-      name: cropData.name,
-      profile: cropData.profile ? cropData.profile.toString("base64") : "",
-      ...includedFields,
+      name: updatedCropData.name,
+      profile: updatedCropData.profile
+        ? updatedCropData.profile.toString("base64")
+        : "",
     });
   } catch (error) {
     return res.status(500).json({ error: error.message });

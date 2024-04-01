@@ -45,8 +45,8 @@ def loadRandomForest():
 
 
 app = Flask(__name__) 
-#model = loadResNet()
-rf = loadRandomForest()
+model = loadResNet()
+#rf = loadRandomForest()
 
 @app.route('/predict', methods=['POST'])
 def predict():
