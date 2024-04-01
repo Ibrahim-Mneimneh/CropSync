@@ -24,5 +24,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
       - run: npm ci
-      - run: write-output "${{ secrets.ENV_FILE }}" | out-file .env
+      - run: |
+        $envContent = $env:{{ secrets.ENV_FILE }}
+        Set-Content -Path ".env" -Value $envContent
       - run: pm2 restart CropSyncAPI
