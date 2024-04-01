@@ -89,6 +89,7 @@ def predict():
     print("Result:", result)
     return jsonify(result)
  
+ 
 @app.route('/recommend', methods=['POST'])
 def recommend():
     global rf  # Access the model defined outside this function
