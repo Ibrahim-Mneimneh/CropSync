@@ -25,5 +25,7 @@ jobs:
           cache: "npm"
       - run: npm ci
       - name: Write .env file
-        run: echo "${{ secrets.ENV_FILE }}" > .env
+        run: |
+          $envContent = $env:ENV_FILE
+          Set-Content -Path ".env" -Value $envContent
       - run: pm2 restart CropSyncAPI
