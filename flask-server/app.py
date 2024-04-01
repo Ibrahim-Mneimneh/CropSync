@@ -31,6 +31,7 @@ def loadResNet():
     except ValueError as e:
         print("Error: Model is incompatible or corrupt")
 
+
 def loadRandomForest():
     # Get the current working directory
     cwd = os.getcwd()
