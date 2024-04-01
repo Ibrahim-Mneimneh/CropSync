@@ -25,5 +25,6 @@ jobs:
           cache: "npm"
       - run: npm ci
       - run: |
-          echo "${{ secrets.ENV_FILE }}" > .env
+          @echo off
+          echo %ENV_FILE_SECRET% > .env
       - run: pm2 restart CropSyncAPI
