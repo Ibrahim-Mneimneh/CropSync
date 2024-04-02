@@ -26,4 +26,5 @@ jobs:
       - run: npm ci
       - run: write-output '${{ secrets.ENV_FILE }}' | out-file -encoding utf8 ".env"
       - run: pm2 restart CropSyncAPI
-      - run: pm2 restart .\flask-server\app.py
+      - run: cd .\flask-server
+      - run: pm2 restart app.py
