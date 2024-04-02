@@ -26,7 +26,7 @@ jobs:
       - run: npm ci
       - run: write-output '${{ secrets.ENV_FILE }}' | out-file -encoding utf8 ".env"
       - run: bash
-      - run: pm2 stop $SERVICE_NAME || true
+      - run: pm2 delete all || true
       - run: exit
       - run: pm2 start server.js --name=CropSyncAPI
       - run: cd .\flask-server
