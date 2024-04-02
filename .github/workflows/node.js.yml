@@ -25,7 +25,14 @@ jobs:
           cache: "npm"
       - run: npm ci
       - run: write-output '${{ secrets.ENV_FILE }}' | out-file -encoding utf8 ".env"
-      - run: pm2 delete all 2>$null
+      - name: Delete PM2 processes
+        run: |
+            try {
+                pm2 delete all
+            } catch {
+                # Print error message to ensure it's caught
+                Write-Host "Error caught: $($_.Exception.Message)"
+            }
       - run: pm2 start server.js --name=CropSyncAPI
       - run: cd .\flask-server
       - run: pm2 start app.py
