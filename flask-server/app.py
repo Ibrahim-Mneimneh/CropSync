@@ -18,7 +18,7 @@ def loadResNet():
     # Get the current working directory
     cwd = os.getcwd()
     # Model file path
-    model_path = os.path.join(cwd, "ResNet-classes2")
+    model_path = os.path.join(cwd, "flask-server", "ResNet-classes2")
 
     try:
         # Load the model
@@ -35,7 +35,7 @@ def loadResNet():
 def loadRandomForest():
     # Get the current working directory
     cwd = os.getcwd()
-    model_path = os.path.join(cwd, "randomForest.pkl")
+    model_path = os.path.join(cwd, "flask-server", "randomForest.pkl")
     try:
         with open(model_path, 'rb') as f:
             randomForest = pickle.load(f)
