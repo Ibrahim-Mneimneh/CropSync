@@ -105,7 +105,8 @@ const recieveSoilData = async (req, res) => {
       humidity,
       temperature,
     });
-    const sensorCollectionDate = new Date(timeStamps);
+    let sensorCollectionDate = new Date(timeStamps);
+
     if (!soilReadings) {
       return res
         .status(400)

@@ -503,7 +503,111 @@ const getRecentDevicesImage = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-// Graph Visual Data
+// Graph Visual Data Weekly
+const getWeeklyDeviceData = async (req, res) => {
+  try {
+    const deviceId = req.params.deviceId;
+    if (!deviceId) {
+      return res.status(400).json({ error: "Please select a device" });
+    }
+    const deviceData = await Device.findOne({ deviceId, userId: req.userId });
+    if (!deviceData) {
+      return res.status(404).json({ error: "Device not found" });
+    }
+
+    // Calculate the current date
+    let currentTime = new Date(Date.now());
+
+    const cropData = await Crop.findById(deviceData.cropId);
+    if (!cropData) {
+      return res.status(404).json({ error: "Crop unassigned to device" });
+    }
+    const sensorCollectionDates = cropData.sensorCollectionDate;
+
+    let weeklySensorCollectionDates = [];
+    let weeklySoilReadingIds = [];
+
+    // Filter dates from the last week
+    for (let i = sensorCollectionDates.length - 1; i >= 0; i--) {
+      const currentIndex = sensorCollectionDates[i];
+      const differenceInDays =
+        (currentTime.getTime() - currentIndex.getTime()) /
+        (1000 * 60 * 60 * 24);
+      if (differenceInDays >= 0 && differenceInDays < 7) {
+        weeklySensorCollectionDates.push(sensorCollectionDates[i]);
+        weeklySoilReadingIds.push(cropData.soilReadings[i]);
+      }
+    }
+
+    const soilReadings = await Promise.all(
+      weeklySoilReadingIds.map(async (soilReadingId) => {
+        const soilReading = await SoilReading.findById(soilReadingId);
+        if (!soilReading) {
+          return null;
+        }
+        const { _id, ...soilReadingModified } = soilReading.toObject();
+        return soilReadingModified;
+      })
+    );
+    return res
+      .status(200)
+      .json({ collectionDates: weeklySensorCollectionDates, soilReadings });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+const getMonthlyDeviceData = async (req, res) => {
+  try {
+    const deviceId = req.params.deviceId;
+    if (!deviceId) {
+      return res.status(400).json({ error: "Please select a device" });
+    }
+    const deviceData = await Device.findOne({ deviceId, userId: req.userId });
+    if (!deviceData) {
+      return res.status(404).json({ error: "Device not found" });
+    }
+
+    // Calculate the current date
+    let currentTime = new Date(Date.now());
+
+    const cropData = await Crop.findById(deviceData.cropId);
+    if (!cropData) {
+      return res.status(404).json({ error: "Crop unassigned to device" });
+    }
+    const sensorCollectionDates = cropData.sensorCollectionDate;
+
+    let weeklySensorCollectionDates = [];
+    let weeklySoilReadingIds = [];
+
+    // Filter dates from the last week
+    for (let i = sensorCollectionDates.length - 1; i >= 0; i--) {
+      const currentIndex = sensorCollectionDates[i];
+      const differenceInDays =
+        (currentTime.getTime() - currentIndex.getTime()) /
+        (1000 * 60 * 60 * 24);
+      if (differenceInDays >= 0 && differenceInDays < 30) {
+        weeklySensorCollectionDates.push(sensorCollectionDates[i]);
+        weeklySoilReadingIds.push(cropData.soilReadings[i]);
+      }
+    }
+
+    const soilReadings = await Promise.all(
+      weeklySoilReadingIds.map(async (soilReadingId) => {
+        const soilReading = await SoilReading.findById(soilReadingId);
+        if (!soilReading) {
+          return null;
+        }
+        const { _id, ...soilReadingModified } = soilReading.toObject();
+        return soilReadingModified;
+      })
+    );
+    return res
+      .status(200)
+      .json({ collectionDates: weeklySensorCollectionDates, soilReadings });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
 // Adjust the date and time of the server with its host
 
@@ -535,4 +639,6 @@ module.exports = {
   getDeviceImages,
   getRecentDevicesImage,
   setDeviceFrequency,
+  getWeeklyDeviceData,
+  getMonthlyDeviceData,
 };
