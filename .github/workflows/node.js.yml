@@ -26,3 +26,5 @@ jobs:
       - run: npm ci
       - run: write-output '${{ secrets.ENV_FILE }}' | out-file -encoding utf8 ".env"
       - run: C:\nssm-2.24\win64\nssm.exe restart CropSyncService
+      - run: C:\nssm-2.24\win64\nssm.exe restart CropSyncServiceFlask
+
