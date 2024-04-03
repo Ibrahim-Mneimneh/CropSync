@@ -28,6 +28,6 @@ jobs:
       - run: write-output '${{ secrets.ENV_FILE }}' | out-file -encoding utf8 ".env"
       - name: Restart Service
         run: |
-          Start-Process -FilePath "C:\nssm-2.24\win64\nssm.exe" -ArgumentList "restart CropSyncService" -Verb RunAs
-          Start-Process -FilePath "C:\nssm-2.24\win64\nssm.exe" -ArgumentList "restart CropSyncServiceFlask" -Verb RunAs
+          C:\nssm-2.24\win64\nssm.exe restart CropSyncService
+          C:\nssm-2.24\win64\nssm.exe restart CropSyncServiceFlask
 
