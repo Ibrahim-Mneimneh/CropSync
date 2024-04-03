@@ -17,7 +17,7 @@ jobs:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
-      - run: taskkill /IM "node.exe" /F /FI "STATUS eq RUNNING"
+      - run: taskkill /F /fi "IMAGENAME eq node.exe"
       - uses: actions/checkout@v3
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
