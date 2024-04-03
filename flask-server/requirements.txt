@@ -1,0 +1,4 @@
+flask==3.0.2
+tensorflow==2.15.0
+Pillow==10.2.0
+scikit-learn==1.4.1.post1
