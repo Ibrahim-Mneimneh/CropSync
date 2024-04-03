@@ -657,13 +657,9 @@ const getMonthlyDeviceData = async (req, res) => {
 
 // Check if we can deploy the model on the mobile and make predictions offline
 
-// change setDeviceCrop to exclude the most recent image and reading
-
 // Add the prediction to the crop related data ( eg:"status":"diseased" )
 
 // Add the recommend and Optimise features ( We'll figure it how when we start)
-
-// Change setCrop (remove the most recent and make them in another api, the profile is an url)
 
 // Rain-meter from API
 
