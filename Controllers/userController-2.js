@@ -560,6 +560,7 @@ const getWeeklyDeviceData = async (req, res) => {
         return {
           deviceId: deviceData.deviceId,
           deviceName: deviceData.name,
+          cropName: cropData.name,
           location: deviceData.city + ", " + deviceData.country,
           nitrogen: weeklyNitrogen,
           phosphorus: weeklyPhosphorus,
@@ -634,6 +635,7 @@ const getMonthlyDeviceData = async (req, res) => {
           deviceId: deviceData.deviceId,
           deviceName: deviceData.name,
           location: deviceData.city + ", " + deviceData.country,
+          cropName: cropData.name,
           nitrogen: weeklyNitrogen,
           phosphorus: weeklyPhosphorus,
           potassium: weeklyPotassium,
