@@ -96,7 +96,22 @@ const recieveSoilData = async (req, res) => {
       temperature,
       timeStamps,
     } = req.body;
-
+    const deviceData = await Device.findById(deviceId);
+    if (!deviceData) {
+      return res
+        .status(404)
+        .json({ error: "Failed to recieve soil readings." });
+    }
+    const location = deviceData.city + ",%20" + deviceData.country;
+    const endpoint =
+      "http://api.weatherapi.com/v1/current.json?key=" +
+      process.env.WeatherKey +
+      "&q=" +
+      location +
+      "&aqi=no&alerts=no";
+    const weatherDataResponse = await fetch(endpoint);
+    const weatherDataJson = await weatherDataResponse.json();
+    const rainfall = weatherDataJson.current.precip_mm;
     const soilReadings = await SoilReading.create({
       nitrogen,
       phosphorus,
@@ -104,6 +119,7 @@ const recieveSoilData = async (req, res) => {
       ph,
       humidity,
       temperature,
+      rainfall,
     });
     let sensorCollectionDate = new Date(timeStamps);
 
@@ -112,6 +128,7 @@ const recieveSoilData = async (req, res) => {
         .status(400)
         .json({ error: "Failed to recieve soil readings." });
     }
+
     const updatedCrop = await Crop.findByIdAndUpdate(
       cropId,
       {

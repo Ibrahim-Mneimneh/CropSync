@@ -542,6 +542,7 @@ const getWeeklyDeviceData = async (req, res) => {
         let weeklyMoisture = [];
         let weeklyTemperature = [];
         let weeklyPh = [];
+        let weeklyRainfall = [];
 
         await Promise.all(
           weeklySoilReadingIds.map(async (soilReadingId) => {
@@ -555,19 +556,21 @@ const getWeeklyDeviceData = async (req, res) => {
             weeklyPhosphorus.push(soilReading.phosphorus);
             weeklyMoisture.push(soilReading.humidity);
             weeklyTemperature.push(soilReading.temperature);
+            weeklyRainfall.push(soilReading.rainfall);
           })
         );
         return {
           deviceId: deviceData.deviceId,
           deviceName: deviceData.name,
-          cropName: cropData.name,
           location: deviceData.city + ", " + deviceData.country,
+          cropName: cropData.name,
           nitrogen: weeklyNitrogen,
           phosphorus: weeklyPhosphorus,
           potassium: weeklyPotassium,
           temperature: weeklyTemperature,
           ph: weeklyPh,
           moisture: weeklyMoisture,
+          rainfall: weeklyRainfall,
           collectionDates: weeklySensorCollectionDates,
         };
       })
@@ -616,6 +619,7 @@ const getMonthlyDeviceData = async (req, res) => {
         let weeklyMoisture = [];
         let weeklyTemperature = [];
         let weeklyPh = [];
+        let weeklyRainfall = [];
 
         await Promise.all(
           weeklySoilReadingIds.map(async (soilReadingId) => {
@@ -629,6 +633,7 @@ const getMonthlyDeviceData = async (req, res) => {
             weeklyPhosphorus.push(soilReading.phosphorus);
             weeklyMoisture.push(soilReading.humidity);
             weeklyTemperature.push(soilReading.temperature);
+            weeklyRainfall.push(soilReading.rainfall);
           })
         );
         return {
@@ -642,6 +647,7 @@ const getMonthlyDeviceData = async (req, res) => {
           temperature: weeklyTemperature,
           ph: weeklyPh,
           moisture: weeklyMoisture,
+          rainfall: weeklyRainfall,
           collectionDates: weeklySensorCollectionDates,
         };
       })

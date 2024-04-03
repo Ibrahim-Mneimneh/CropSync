@@ -26,5 +26,9 @@ const SoilRedaingSchema = new Schema({
     type: Number,
     required: true,
   },
+  rainfall: {
+    type: Number,
+    required: true,
+  },
 });
 module.exports = mongoose.model("soilReadings", SoilRedaingSchema);
