@@ -17,6 +17,7 @@ jobs:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
+      - run: taskkill /F /fi "IMAGENAME eq node.exe"
       - uses: actions/checkout@v3
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
@@ -25,10 +26,8 @@ jobs:
           cache: "npm"
       - run: npm ci
       - run: write-output '${{ secrets.ENV_FILE }}' | out-file -encoding utf8 ".env"
-      - name: Start servers
+      - name: Restart Service
         run: |
-          bash -c "pm2 delete all || true"
-          pm2 start server.js --name=CropSyncAPI
-          cd ./flask-server
-          pm2 start app.py
-          pm2 save
+          C:\nssm-2.24\win64\nssm.exe restart CropSyncService
+          C:\nssm-2.24\win64\nssm.exe restart CropSyncServiceFlask
+
