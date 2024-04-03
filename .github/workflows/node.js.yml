@@ -25,9 +25,4 @@ jobs:
           cache: "npm"
       - run: npm ci
       - run: write-output '${{ secrets.ENV_FILE }}' | out-file -encoding utf8 ".env"
-      - name: Start servers
-        run: |
-          bash -c "pm2 delete all || true"
-          pm2 start server.js --name=CropSyncAPI
-          cd ./flask-server
-          pm2 start app.py
+      - run: C:\nssm-2.24\win64\nssm.exe restart CropSyncService
