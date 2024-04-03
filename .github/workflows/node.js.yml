@@ -31,4 +31,3 @@ jobs:
           pm2 start server.js --name=CropSyncAPI
           cd ./flask-server
           pm2 start app.py
-          pm2 save
