@@ -61,11 +61,12 @@ const recieveLeafImage = async (req, res) => {
       },
       body: JSON.stringify({ img: leafImage }),
     });
-    if (!response.ok) {
-      console.log(response.json());
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
     data = await response.json();
+    if (!response.ok) {
+      console.log(data);
+      throw new Error(`HTTP error! Status: ${response.status}, ${data}`);
+    }
+
     console.log(data);
     if (!data.result) {
       console.log(data.error);
