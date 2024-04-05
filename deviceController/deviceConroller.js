@@ -54,7 +54,7 @@ const recieveLeafImage = async (req, res) => {
     const leafImg = await LeafImage.create({ image: leafImageBuffer }); // leafImage is already taken
     const cameraCollectionDate = new Date(timeStamps);
     let data;
-    const response = await fetch("http://127.0.0.2:5000/predict", {
+    const response = await fetch("http://127.0.0.1:5000/predict", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
