@@ -65,12 +65,7 @@ const recieveLeafImage = async (req, res) => {
     if (!response.ok) {
       console.log(data.error);
     }
-
     console.log(data);
-    if (!data.result) {
-      console.log(data.error);
-    }
-
     const updatedCrop = await Crop.findByIdAndUpdate(
       cropId,
       {
