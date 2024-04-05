@@ -71,7 +71,7 @@ const recieveLeafImage = async (req, res) => {
       cropId,
       {
         $push: { leafImages: leafImg._id, cameraCollectionDate },
-        status: data.result ? data.result : null,
+        status: data ? data : null,
       },
       { new: true }
     );
