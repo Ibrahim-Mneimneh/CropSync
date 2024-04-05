@@ -81,7 +81,7 @@ def predict():
     predicted_class_label = np.argmax(prediction)
 
     # Get the class label names
-    class_labels = ['diseased','healthy']
+    class_labels = ['Diseased','Healthy']
 
     # Print the predicted class label
     print("Predicted class:", class_labels[predicted_class_label])
@@ -121,4 +121,4 @@ def recommend():
     return jsonify(result)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000) 
+    app.run(host='127.0.0.1', port=5000) 

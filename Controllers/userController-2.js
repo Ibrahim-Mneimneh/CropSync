@@ -669,7 +669,7 @@ const getMonthlyDeviceData = async (req, res) => {
 
 // Add the recommend and Optimise features ( We'll figure it how when we start)
 
-// Rain-meter from API
+// images to url
 
 module.exports = {
   setProfile,

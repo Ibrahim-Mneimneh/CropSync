@@ -53,9 +53,29 @@ const recieveLeafImage = async (req, res) => {
 
     const leafImg = await LeafImage.create({ image: leafImageBuffer }); // leafImage is already taken
     const cameraCollectionDate = new Date(timeStamps);
+    let data;
+    try {
+      const response = await fetch("http://127.0.0.1:5000/predict", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ img: leafImage }),
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      data = await response.json();
+    } catch (error) {
+      console.log(error.message);
+      data = undefined;
+    }
     const updatedCrop = await Crop.findByIdAndUpdate(
       cropId,
-      { $push: { leafImages: leafImg._id, cameraCollectionDate } },
+      {
+        $push: { leafImages: leafImg._id, cameraCollectionDate },
+        status: data,
+      },
       { new: true }
     );
     if (!updatedCrop) {

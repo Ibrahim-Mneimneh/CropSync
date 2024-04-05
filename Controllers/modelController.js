@@ -4,7 +4,7 @@ const isHealthy = async (req, res) => {
     if (!base64Image) {
       return res.status(400).json({ error: "Please select an image to scan" });
     }
-    const response = await fetch("http://192.168.0.108:5000/predict", {
+    const response = await fetch("http://127.0.0.1:5000/predict", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -36,7 +36,7 @@ const recommendCrop = async (req, res) => {
       ph: 7.07,
       rainfall: 251,
     };
-    const response = await fetch("http://192.168.0.108:5000/recommend", {
+    const response = await fetch("http://127.0.0.1:5000/recommend", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -46,8 +46,8 @@ const recommendCrop = async (req, res) => {
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
-
     const data = await response.json();
+
     res.status(200).json({ result: data });
   } catch (error) {
     console.error(error.message);
