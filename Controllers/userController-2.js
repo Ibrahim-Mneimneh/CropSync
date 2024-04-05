@@ -105,6 +105,7 @@ const getDevices = async (req, res) => {
           crop: {
             name: crop.name ? crop.name : null,
             profile: crop.profile ? crop.profile : null,
+            status: crop.status ? crop.status : null,
           },
         };
         return device;
@@ -504,7 +505,7 @@ const getRecentDevicesImage = async (req, res) => {
   }
 };
 // Graph Visual Data Weekly
-const getWeeklyDeviceData = async (req, res) => {
+const getDeviceDataSince = async (req, res, duration) => {
   try {
     const devicesData = await Device.find({ userId: req.userId });
     if (!devicesData) {
@@ -531,7 +532,7 @@ const getWeeklyDeviceData = async (req, res) => {
           const differenceInDays =
             (currentTime.getTime() - currentIndex.getTime()) /
             (1000 * 60 * 60 * 24);
-          if (differenceInDays >= 0 && differenceInDays < 7) {
+          if (differenceInDays >= 0 && differenceInDays < duration) {
             weeklySensorCollectionDates.push(sensorCollectionDates[i]);
             weeklySoilReadingIds.push(cropData.soilReadings[i]);
           }
@@ -564,6 +565,7 @@ const getWeeklyDeviceData = async (req, res) => {
           deviceName: deviceData.name,
           location: deviceData.city + ", " + deviceData.country,
           cropName: cropData.name,
+          status: cropData.status,
           nitrogen: weeklyNitrogen,
           phosphorus: weeklyPhosphorus,
           potassium: weeklyPotassium,
@@ -581,82 +583,12 @@ const getWeeklyDeviceData = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+const getWeeklyDeviceData = async (req, res) => {
+  return await getDeviceDataSince(req, res, 7);
+};
+
 const getMonthlyDeviceData = async (req, res) => {
-  try {
-    const devicesData = await Device.find({ userId: req.userId });
-    if (!devicesData) {
-      return res.status(404).json({ error: "Device not found" });
-    }
-
-    // Calculate the current date
-    let currentTime = new Date(Date.now());
-
-    const devicesReading = await Promise.all(
-      devicesData.map(async (deviceData) => {
-        const cropData = await Crop.findById(deviceData.cropId);
-        if (!cropData) {
-          return res.status(404).json({ error: "Crop unassigned to device" });
-        }
-        const sensorCollectionDates = cropData.sensorCollectionDate;
-
-        let weeklySensorCollectionDates = [];
-        let weeklySoilReadingIds = [];
-
-        // Filter dates from the last week
-        for (let i = sensorCollectionDates.length - 1; i >= 0; i--) {
-          const currentIndex = sensorCollectionDates[i];
-          const differenceInDays =
-            (currentTime.getTime() - currentIndex.getTime()) /
-            (1000 * 60 * 60 * 24);
-          if (differenceInDays >= 0 && differenceInDays < 30) {
-            weeklySensorCollectionDates.push(sensorCollectionDates[i]);
-            weeklySoilReadingIds.push(cropData.soilReadings[i]);
-          }
-        }
-        let weeklyNitrogen = [];
-        let weeklyPhosphorus = [];
-        let weeklyPotassium = [];
-        let weeklyMoisture = [];
-        let weeklyTemperature = [];
-        let weeklyPh = [];
-        let weeklyRainfall = [];
-
-        await Promise.all(
-          weeklySoilReadingIds.map(async (soilReadingId) => {
-            const soilReading = await SoilReading.findById(soilReadingId);
-            if (!soilReading) {
-              return null;
-            }
-            weeklyNitrogen.push(soilReading.nitrogen);
-            weeklyPh.push(soilReading.ph);
-            weeklyPotassium.push(soilReading.potassium);
-            weeklyPhosphorus.push(soilReading.phosphorus);
-            weeklyMoisture.push(soilReading.humidity);
-            weeklyTemperature.push(soilReading.temperature);
-            weeklyRainfall.push(soilReading.rainfall);
-          })
-        );
-        return {
-          deviceId: deviceData.deviceId,
-          deviceName: deviceData.name,
-          location: deviceData.city + ", " + deviceData.country,
-          cropName: cropData.name,
-          nitrogen: weeklyNitrogen,
-          phosphorus: weeklyPhosphorus,
-          potassium: weeklyPotassium,
-          temperature: weeklyTemperature,
-          ph: weeklyPh,
-          moisture: weeklyMoisture,
-          rainfall: weeklyRainfall,
-          collectionDates: weeklySensorCollectionDates,
-        };
-      })
-    );
-
-    return res.status(200).json({ data: devicesReading });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  return await getDeviceDataSince(req, res, 30);
 };
 
 // Adjust the date and time of the server with its host

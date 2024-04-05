@@ -62,7 +62,7 @@ router.use("/:deviceId/images", verifyUser);
 router.use("/devices/image", verifyUser);
 router.use("/:deviceId/frequency", verifyUser);
 router.use("/device/soil/reading/weekly", verifyUser);
-router.use("/deviceId/soil/reading/monthly", verifyUser);
+router.use("/device/soil/reading/monthly", verifyUser);
 
 router.post("/ResetPassword", resetPassword);
 router.get("/Request/DeleteAccount", deleteAccountRequest);
