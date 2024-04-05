@@ -66,13 +66,15 @@ const recieveLeafImage = async (req, res) => {
     }
     data = await response.json();
     console.log(data);
-    data = data.result;
+    if (!data.result) {
+      console.log(data.error);
+    }
 
     const updatedCrop = await Crop.findByIdAndUpdate(
       cropId,
       {
         $push: { leafImages: leafImg._id, cameraCollectionDate },
-        status: data ? data : null,
+        status: data.result ? data.result : null,
       },
       { new: true }
     );

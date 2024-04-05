@@ -18,7 +18,6 @@ def loadResNet():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     # Model file path
     model_path = os.path.join(script_dir, "ResNet-classes2")
-
     try:
         # Load the model
         model = tf.keras.models.load_model(model_path)
@@ -58,13 +57,13 @@ model = loadResNet()
 def predict():
     global model  # Access the model defined outside this function
     if model is None:
-        return jsonify({"error": "Model not loaded"})
+        return jsonify({"result": None,"error": "Model not loaded"})
 
     data = request.get_json()  # Get the data
     base64_image = data.get('img', None) # acquire the image
     
     if base64_image is None:
-        return jsonify({"error": "Image data not provided"})
+        return jsonify({"result": None,"error": "Image data not provided"})
     
     # Decode the base64 string into a PIL Image
     image_data = base64.b64decode(base64_image)
@@ -86,14 +85,14 @@ def predict():
     print("Predicted class:", class_labels[predicted_class_label])
     result=class_labels[predicted_class_label]
     print("Result:", result)
-    return jsonify(result)
+    return jsonify({"result": result, "error": None})
  
  
 @app.route('/recommend', methods=['POST'])
 def recommend():
     global rf  # Access the model defined outside this function
     if rf is None:
-        return jsonify({"error": "Random Forest cannot be loaded"})
+        return jsonify({"result":None,"error": "Random Forest cannot be loaded"})
 
     data = request.get_json()  # Get the data
     
@@ -101,7 +100,7 @@ def recommend():
     soilReadings = data.get('soilReading', None)
     
     if soilReadings is None:
-        return jsonify({"error": "Soil readings not provided"})
+        return jsonify({"result":None,"error": "Soil readings not provided"})
     
     # Extract individual parameters
     nitrogen = soilReadings.get('nitrogen', None)
@@ -117,7 +116,7 @@ def recommend():
     input_data = np.array([[nitrogen, phosphorus, potassium, temperature, humidity, ph, rainfall]])
     result =rf.predict(input_data)
     print("Result:", result)
-    return jsonify(result)
+    return jsonify({"result": result, "error": None})
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=5000) 
