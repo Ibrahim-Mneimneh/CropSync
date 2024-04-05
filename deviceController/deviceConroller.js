@@ -65,6 +65,7 @@ const recieveLeafImage = async (req, res) => {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
     data = await response.json();
+    console.log(data);
     data = data.result;
 
     const updatedCrop = await Crop.findByIdAndUpdate(
