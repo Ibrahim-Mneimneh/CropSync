@@ -15,10 +15,9 @@ from io import BytesIO
 print("Current Working Directory:", os.getcwd())
 
 def loadResNet():
-    # Get the current working directory
-    cwd = os.getcwd()
+    script_dir = os.path.dirname(os.path.abspath(__file__))
     # Model file path
-    model_path = os.path.join(cwd, "ResNet-classes2")
+    model_path = os.path.join(script_dir, "ResNet-classes2")
 
     try:
         # Load the model
