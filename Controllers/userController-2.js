@@ -333,7 +333,10 @@ const getDeviceImages = async (req, res) => {
     const imageBatch = await Promise.all(
       imageBatchIds.map(async (imageId) => {
         const imageData = await LeafImage.findById(imageId);
-        return imageData.image.toString("base64");
+        if (!imageData) {
+          return "";
+        }
+        return "/user/" + deviceId + "/image/" + imageId;
       })
     );
     return res.status(200).json({
@@ -349,6 +352,38 @@ const getDeviceImages = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
+// Serve Images from Url
+const getImageFromUrl = async (req, res) => {
+  try {
+    const deviceId = req.params.deviceId;
+    const leafImageId = req.params.leafImageId;
+    const leafImage = await LeafImage.findById(leafImageId);
+    if (!leafImage || !deviceId) {
+      return res.status(404).send("Image not found");
+    }
+    // Check if the device is existing
+    const deviceData = await Device.findOne({ deviceId, userId: req.userId });
+    if (!deviceData) {
+      return res.status(404).send("Image not found");
+    }
+    // Make sure this image is for this user
+    const cropData = await Crop.findById(deviceData.cropId);
+    if (!cropData) {
+      return res.status(404).send("Image not found");
+    }
+    if (!cropData.leafImages.includes(req.params.leafImageId)) {
+      return res.status(403).send("Unauthorized Access");
+    }
+    // Convert buffer to base64
+    res.setHeader("Content-Type", leafImage.image.contentType || "image/jpeg");
+
+    res.send(leafImage.image);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Internal Server Error");
+  }
+};
+
 // Set the timing for soil readings and camera images along with the size of the images sou want
 const setDeviceFrequency = async (req, res) => {
   try {
@@ -591,13 +626,11 @@ const getMonthlyDeviceData = async (req, res) => {
   return await getDeviceDataSince(req, res, 30);
 };
 
-// Adjust the date and time of the server with its host
+// Add the link to Gemini to get the tips on how to treat the leaf (zouheir)
 
-// Add the link to Gemini to get the tips on how to treat the leaf
+// Check if we can deploy the model on the mobile and make predictions offline (zouheir+me)
 
-// Check if we can deploy the model on the mobile and make predictions offline
-
-// Add the prediction to the crop related data ( eg:"status":"diseased" )
+// Finish the prediction to the crop related
 
 // Add the recommend and Optimise features ( We'll figure it how when we start)
 
@@ -619,4 +652,5 @@ module.exports = {
   setDeviceFrequency,
   getWeeklyDeviceData,
   getMonthlyDeviceData,
+  getImageFromUrl,
 };
