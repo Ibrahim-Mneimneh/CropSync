@@ -4,9 +4,6 @@ import sklearn.exceptions
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 from flask import Flask, request, jsonify
 import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras.applications.resnet50 import preprocess_input
-from tensorflow.keras.preprocessing import image
 import numpy as np
 import base64
 from PIL import Image
@@ -19,6 +16,7 @@ def loadResNet():
     # Model file path
     model_path = os.path.join(script_dir, "ResNet-classes2")
     try:
+        from tensorflow import keras
         # Load the model
         model = tf.keras.models.load_model(model_path)
         print(model.summary())
@@ -55,6 +53,8 @@ model = loadResNet()
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    from tensorflow.keras.applications.resnet50 import preprocess_input
+    from tensorflow.keras.preprocessing import image
     global model  # Access the model defined outside this function
     if model is None:
         return jsonify({"result": None,"error": "Model not loaded"})
