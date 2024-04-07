@@ -61,16 +61,17 @@ const recieveLeafImage = async (req, res) => {
       },
       body: JSON.stringify({ img: leafImage }),
     });
+    console.log("This is running");
     data = await response.json();
     if (!response.ok) {
       console.log(data.error);
     }
-
+    console.log("This is running 2");
     console.log(data);
     if (!data.result) {
       console.log(data.error);
     }
-
+    console.log("This is running 3");
     const updatedCrop = await Crop.findByIdAndUpdate(
       cropId,
       {
@@ -79,6 +80,7 @@ const recieveLeafImage = async (req, res) => {
       },
       { new: true }
     );
+    console.log("This is running 4");
     if (!updatedCrop) {
       return res.status(400).json({ error: "Failed to recieve image." });
     }

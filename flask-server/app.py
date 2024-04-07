@@ -79,7 +79,7 @@ def predict():
     predicted_class_label = np.argmax(prediction)
 
     # Get the class label names
-    class_labels = ['Diseased','Healthy']
+    class_labels = ['diseased','healthy']
 
     # Print the predicted class label
     print("Predicted class:", class_labels[predicted_class_label])
