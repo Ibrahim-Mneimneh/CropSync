@@ -88,7 +88,7 @@ const recieveLeafImage = async (req, res) => {
       .status(200)
       .json({ result: "success", frequencyFlag: req.frequencyFlag });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message, error2: error });
   }
 };
 // send soil readings
