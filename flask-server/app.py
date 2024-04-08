@@ -11,7 +11,8 @@ import numpy as np
 import base64
 from PIL import Image
 from io import BytesIO
-
+from sklearn.preprocessing import StandardScaler
+import numpy as np
 print("Current Working Directory:", os.getcwd())
 
 def loadResNet():
@@ -22,7 +23,7 @@ def loadResNet():
         # Load the model
         model = tf.keras.models.load_model(model_path)
         print(model.summary())
-        print("Model loaded successfully!")
+        print("ResNet loaded successfully!")
         return model
     except OSError as e:
         print("Error loading model:", e)
@@ -37,6 +38,7 @@ def loadRandomForest():
     try:
         with open(model_path, 'rb') as f:
             randomForest = pickle.load(f)
+            print("RandomForest loaded successfully!")
         return randomForest
     except FileNotFoundError as e:
         print(f"Model file '{model_path}' not found: {e}")
@@ -48,10 +50,26 @@ def loadRandomForest():
         print(f"Unexpected error occurred while loading Random Forest model: {e}")
         return None
 
+import numpy as np
+
+def remove_outliers_and_replace_with_mean(array, threshold):
+    # Calculate the mean and standard deviation of the array
+    mean = np.mean(array)
+    std_dev = np.std(array)
+    
+    # Calculate the threshold as a multiple of the standard deviation
+    threshold_value = threshold * std_dev
+    
+    # Replace outliers with the mean
+    cleaned_array = [x if (mean - threshold_value) <= x <= (mean + threshold_value) else mean for x in array]
+    
+    return cleaned_array
+
+
 
 app = Flask(__name__) 
 model = loadResNet()
-#rf = loadRandomForest()
+rf = loadRandomForest()
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -90,9 +108,9 @@ def predict():
  
 @app.route('/recommend', methods=['POST'])
 def recommend():
-    global rf  # Access the model defined outside this function
+    global rf
     if rf is None:
-        return jsonify({"result":None,"error": "Random Forest cannot be loaded"})
+        return jsonify({"result": None, "error": "Random Forest cannot be loaded"})
 
     data = request.get_json()  # Get the data
     
@@ -100,23 +118,48 @@ def recommend():
     soilReadings = data.get('soilReading', None)
     
     if soilReadings is None:
-        return jsonify({"result":None,"error": "Soil readings not provided"})
+        return jsonify({"result": None, "error": "Soil readings not provided"})
     
+    thresholds = {
+    'nitrogen': 1.9,
+    'phosphorus': 1.9,
+    'potassium': 1.9,
+    'temperature': 2,
+    'ph': 1.5,
+    'moisture': 2,
+}
+    averages={}
+    averages_before={}
+    for key, array in soilReadings.items():
+        if key !="rainfall":
+            averages_before[key] = np.mean(array)
+            print(key)
+            threshold= thresholds.get(key,None)
+            cleaned_array = remove_outliers_and_replace_with_mean(array,threshold)
+            average = np.mean(cleaned_array)
+        else:
+            average=np.mean(array)
+        averages[key] = average
+    print("Averages before: ",averages_before)
+    print("Averages after: ",averages)
     # Extract individual parameters
-    nitrogen = soilReadings.get('nitrogen', None)
-    phosphorus = soilReadings.get('phosphorus', None)
-    potassium = soilReadings.get('potassium', None)
-    ph = soilReadings.get('ph', None)
-    humidity = soilReadings.get('humidity', None)
-    temperature = soilReadings.get('temperature', None)
-    rainfall = soilReadings.get('rainfall', None)
+    nitrogen = averages.get('nitrogen', None)
+    phosphorus = averages.get('phosphorus', None)
+    potassium = averages.get('potassium', None)
+    ph = averages.get('ph', None)
+    moisture = averages.get('moisture', None)
+    temperature = averages.get('temperature', None)
+    rainfall = averages.get('rainfall', None)
+    
     # Check if any parameter is missing
-    if None in (nitrogen, phosphorus, potassium, ph, humidity, temperature):
+    if None in (nitrogen, phosphorus, potassium, ph, moisture, temperature,rainfall):
         return jsonify({"error": "Some soil parameters are missing"})
-    input_data = np.array([[nitrogen, phosphorus, potassium, temperature, humidity, ph, rainfall]])
-    result =rf.predict(input_data)
+    input_data = np.array([[nitrogen, phosphorus, potassium, temperature, moisture, ph, rainfall]])
+    
+    # Make prediction using the random forest model
+    result = rf.predict(input_data)
     print("Result:", result)
-    return jsonify({"result": result, "error": None})
+    return jsonify({"result": result.tolist(), "error": None})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000) 

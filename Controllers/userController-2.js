@@ -580,7 +580,7 @@ const getDeviceDataSince = async (req, res, duration) => {
         let weeklyPh = [];
         let weeklyRainfall = [];
 
-        await Promise.all(
+        const soilReadingError = await Promise.all(
           weeklySoilReadingIds.map(async (soilReadingId) => {
             const soilReading = await SoilReading.findById(soilReadingId);
             if (!soilReading) {
@@ -593,8 +593,12 @@ const getDeviceDataSince = async (req, res, duration) => {
             weeklyMoisture.push(soilReading.humidity);
             weeklyTemperature.push(soilReading.temperature);
             weeklyRainfall.push(soilReading.rainfall);
+            return soilReadingId;
           })
         );
+        if (!soilReadingError) {
+          return res.status(400).json({ error: "Failed to fetch data" });
+        }
         return {
           deviceId: deviceData.deviceId,
           deviceName: deviceData.name,
@@ -630,9 +634,11 @@ const getMonthlyDeviceData = async (req, res) => {
 
 // Check if we can deploy the model on the mobile and make predictions offline (zouheir+me)
 
+// Notifications
+
 // Finish the prediction to the crop related
 
-// Add the recommend and Optimise features ( We'll figure it how when we start)
+// Add the recommend (semi-done) and Optimise features ( We'll figure it how when we start)
 
 // images to url
 
