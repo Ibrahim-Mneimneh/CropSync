@@ -55,7 +55,7 @@ const recommendCrop = async (req, res) => {
       cropData.soilReadings.map(async (soilReadingId) => {
         const soilReading = await SoilReading.findById(soilReadingId);
         if (!soilReading) {
-          return null;
+          return "";
         }
         nitrogen.push(soilReading.nitrogen);
         ph.push(soilReading.ph);

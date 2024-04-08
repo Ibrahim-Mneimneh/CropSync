@@ -637,7 +637,7 @@ const getMonthlyDeviceData = async (req, res) => {
 
 // Finish the prediction to the crop related
 
-// Add the recommend (semi-done) and Optimise features ( We'll figure it how when we start)
+// Optimise features ( We'll figure it how when we start)
 
 // images to url
 
