@@ -521,8 +521,6 @@ const getRecentDevicesImage = async (req, res) => {
           cropData.cameraCollectionDate[
             cropData.cameraCollectionDate.length - 1
           ];
-        const { _id, ...recentLeafImageReadingModified } =
-          recentLeafImage.toObject();
 
         return {
           deviceId: deviceData.deviceId,
@@ -530,7 +528,8 @@ const getRecentDevicesImage = async (req, res) => {
           location: deviceData.city + ", " + deviceData.country,
           cropName: cropData.name,
           cameraCollectionDate: recentCameraCollectionDate,
-          ...recentLeafImageReadingModified,
+          recentLeafImage:
+            "/user/" + deviceData.deviceId + "/image/" + recentLeafImage._id,
         };
       })
     );
