@@ -39,7 +39,7 @@ def loadRandomForest():
         with open(model_path, 'rb') as f:
             randomForest = pickle.load(f)
             print("RandomForest loaded successfully!")
-        return randomForest
+            return randomForest
     except FileNotFoundError as e:
         print(f"Model file '{model_path}' not found: {e}")
         return None
