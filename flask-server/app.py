@@ -68,7 +68,6 @@ def remove_outliers_and_replace_with_mean(array, threshold):
 
 app = Flask(__name__) 
 model = loadResNet()
-rf = loadRandomForest()
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -107,7 +106,7 @@ def predict():
  
 @app.route('/recommend', methods=['POST'])
 def recommend():
-    global rf
+    rf = loadRandomForest()
     if rf is None:
         return jsonify({"result": None, "error": "Random Forest cannot be loaded"})
 
