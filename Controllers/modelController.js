@@ -76,6 +76,7 @@ const recommendCrop = async (req, res) => {
       moisture,
       rainfall,
     };
+    console.log(soilData);
     // nitrogen.push(600);
     // ph.push(9);
     // potassium.push(140);
@@ -97,7 +98,7 @@ const recommendCrop = async (req, res) => {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
     const data = await response.json();
-
+    console.log(data);
     res.status(200).json({ result: data.result[0] });
   } catch (error) {
     console.error(error.message);

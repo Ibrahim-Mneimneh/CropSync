@@ -151,7 +151,7 @@ def recommend():
     rainfall = averages.get('rainfall', None)
     
     # Check if any parameter is missing
-    if None in (nitrogen, phosphorus, potassium, ph, moisture, temperature,rainfall):
+    if None in (nitrogen, phosphorus, potassium, ph, moisture, temperature):
         return jsonify({"error": "Some soil parameters are missing"})
     input_data = np.array([[nitrogen, phosphorus, potassium, temperature, moisture, ph, rainfall]])
     
