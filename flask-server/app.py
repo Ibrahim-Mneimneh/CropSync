@@ -13,12 +13,13 @@ from PIL import Image
 from io import BytesIO
 from sklearn.preprocessing import StandardScaler
 import numpy as np
+
 print("Current Working Directory:", os.getcwd())
 
 def loadResNet():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     # Model file path
-    model_path = os.path.join(script_dir, "ResNet-classes2")
+    model_path = os.path.join(script_dir, "RESNET50-5-PLANT_DISEASE")
     try:
         # Load the model
         model = tf.keras.models.load_model(model_path)
@@ -50,8 +51,6 @@ def loadRandomForest():
         print(f"Unexpected error occurred while loading Random Forest model: {e}")
         return None
 
-import numpy as np
-
 def remove_outliers_and_replace_with_mean(array, threshold):
     # Calculate the mean and standard deviation of the array
     mean = np.mean(array)
@@ -80,28 +79,32 @@ def predict():
     
     if base64_image is None:
         return jsonify({"result": None,"error": "Image data not provided"})
-    
-    # Decode the base64 string into a PIL Image
-    image_data = base64.b64decode(base64_image)
-    pil_image = Image.open(BytesIO(image_data))
-    pil_image = pil_image.resize((224, 224))
-    img_array = image.img_to_array(pil_image)
-    #Cast to float32
-    img_array = np.expand_dims(img_array, axis=0).astype('float32')
-    # Preprocess the image
-    img_preprocessed = preprocess_input(img_array)
-    prediction = model.predict(img_preprocessed)
-    # Get the predicted class label
-    predicted_class_label = np.argmax(prediction)
+    try:
+        # Decode the base64 string into a PIL Image
+        image_data = base64.b64decode(base64_image)
+        pil_image = Image.open(BytesIO(image_data))
+        pil_image = pil_image.resize((224, 224))
+        img_array = image.img_to_array(pil_image)
+        #Cast to float32
+        img_array = np.expand_dims(img_array, axis=0).astype('float32')
+        # Preprocess the image
+        img_preprocessed = preprocess_input(img_array)
+        prediction = model.predict(img_preprocessed)
+        # Get the predicted class label
+        predicted_class_label = np.argmax(prediction)
 
-    # Get the class label names
-    class_labels = ['diseased','healthy']
+        # Get the class label names
+        print(prediction)
+        class_labels = ["Bacterial Spot","Early Blight","Healthy","Late Blight","Powdery Mildew"]
 
-    # Print the predicted class label
-    print("Predicted class:", class_labels[predicted_class_label])
-    result=class_labels[predicted_class_label]
-    print("Result:", result)
-    return jsonify({"result": result, "error": None})
+        # Print the predicted class label
+        print("Predicted class:", class_labels[predicted_class_label])
+        result=class_labels[predicted_class_label]
+        print("Result:", result)
+        return jsonify({"result": result, "error": None})
+    except Exception as e:
+        # Handle any errors that occur during image processing
+        return jsonify({"result": None, "error": str(e)})
  
  
 @app.route('/recommend', methods=['POST'])
