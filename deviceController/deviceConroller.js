@@ -177,7 +177,7 @@ const recieveSoilData = async (req, res) => {
       method: "POST",
       headers: {
         accept: "application/json",
-        Authorization: process.env.OSAPIKEY,
+        Authorization: "Basic " + process.env.OSAPIKEY,
         "content-type": "application/json",
       },
       body: JSON.stringify({
