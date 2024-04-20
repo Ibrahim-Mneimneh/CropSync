@@ -1,5 +1,6 @@
 const User = require("../Models/userModel");
 const validator = require("validator");
+const fetch = require("node-fetch");
 const jwt = require("jsonwebtoken");
 const Device = require("../Models/deviceModel");
 const Crop = require("../Models/CropModel");
@@ -166,6 +167,39 @@ const recieveSoilData = async (req, res) => {
         .status(400)
         .json({ error: "Failed to recieve soil readings." });
     }
+    // send notifications
+    const userData = await User.findById(deviceData.userId);
+    if (!userData) {
+      console.log("Error sending notification");
+    }
+    const url = "https://api.onesignal.com/notifications";
+    const options = {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        Authorization: process.env.OSAPIKEY,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        app_id: process.env.APPID,
+        include_aliases: {
+          external_id: [userData.email],
+        },
+        target_channel: "push",
+        data: { foo: "bar" },
+        headings: { en: "Optimize Your Garden's Health!" },
+        contents: {
+          en: "Ensure your soil readings are tailored to your crops' needs for vibrant growth and optimal yield!",
+        },
+      }),
+    };
+
+    fetch(url, options)
+      .then((res) => res.json())
+      .then((json) => console.log(json))
+      .catch((err) => console.error("error:" + err));
+
+    // return result
     return res
       .status(200)
       .json({ result: "success", frequencyFlag: req.frequencyFlag });

@@ -2,7 +2,7 @@ const User = require("../Models/userModel");
 const jwt = require("jsonwebtoken");
 var randomize = require("randomatic");
 const bcrypt = require("bcrypt");
-
+const fetch = require("node-fetch");
 const { emailSender } = require("./emailController");
 const UserAuth = require("../Models/authModel");
 
@@ -81,6 +81,40 @@ const loginUser = async (req, res) => {
         });
       }
     }
+    let oneSignalResult;
+    // doesnt have a onesignalId
+    if (!user.externalId) {
+      const url =
+        "https://api.onesignal.com/apps/" + process.env.APPID + "/users";
+      const options = {
+        method: "POST",
+        headers: {
+          accept: "application/json",
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          identity: { external_id: user.email },
+        }),
+      };
+      fetch(url, options)
+        .then((res) => res.json())
+        .then((json) => {
+          oneSignalResult = json;
+          console.log(oneSignalResult);
+        })
+        .catch((err) => console.error("Onesignal error:" + err));
+
+      const updatedUser = await User.findByIdAndUpdate(
+        user._id,
+        {
+          externalId: user.email,
+        },
+        { new: true }
+      );
+      if (!updatedUser) {
+        return res.status(400).json({ error: "Failed to fetch data" });
+      }
+    }
     // we can delete the old ones here if possible
     const {
       _id,
@@ -89,7 +123,11 @@ const loginUser = async (req, res) => {
       devicesId,
       ...userData
     } = user.toObject();
-    return res.status(200).json({ token, ...userData });
+    return res.status(200).json({
+      token,
+      externalId: user.email,
+      ...userData,
+    });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }

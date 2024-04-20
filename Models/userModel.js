@@ -31,6 +31,9 @@ const UserSchema = new Schema({
   devicesId: {
     type: Array,
   },
+  externalId: {
+    type: String,
+  },
 });
 
 UserSchema.statics.signup = async function (fullName, email, password) {
@@ -45,9 +48,36 @@ UserSchema.statics.signup = async function (fullName, email, password) {
       if (usedEmail) {
         throw Error("Email already in-use.");
       }
+      // create one signal instance
+      let oneSignalResult;
+      const url =
+        "https://api.onesignal.com/apps/" + process.env.APPID + "/users";
+      const options = {
+        method: "POST",
+        headers: {
+          accept: "application/json",
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          identity: { external_id: user.email },
+        }),
+      };
+      fetch(url, options)
+        .then((res) => res.json())
+        .then((json) => {
+          oneSignalResult = json;
+          console.log(oneSignalResult);
+        })
+        .catch((err) => console.error("Onesignal error:" + err));
+      // hash pass
       const salt = await bcrypt.genSalt(10);
       const hash = await bcrypt.hash(password, salt);
-      const user = await this.create({ email, fullName, password: hash });
+      const user = await this.create({
+        email,
+        fullName,
+        password: hash,
+        externalId: email,
+      });
       return { user, salt };
     }
   }
