@@ -16,7 +16,19 @@ const cropAuthSchema = new Schema(
     leafImages: [{ type: mongoose.Schema.Types.ObjectId, ref: "leafImages" }],
     sensorCollectionDate: [{ type: Date }],
     cameraCollectionDate: [{ type: Date }],
-    status: { type: String, default: "Healthy" },
+    alerts: {
+      soil: {
+        nutrient: [{ type: String }],
+        severity: [{ type: String }],
+        message: [{ type: String }],
+        action: [{ type: String }],
+      },
+      leaf: {
+        status: { type: String, default: "Healthy" },
+        message: [{ type: String }],
+        action: [{ type: String }],
+      },
+    },
   },
   { timestamps: true }
 );

@@ -35,6 +35,10 @@ const {
   getImageFromUrl,
 } = require("../Controllers/userController-2");
 const { isHealthy, recommendCrop } = require("../Controllers/modelController");
+const {
+  callGeminiImage,
+  testCompareSoil,
+} = require("../Controllers/GeminiController");
 const router = express.Router();
 
 router.post("/login", loginUser);

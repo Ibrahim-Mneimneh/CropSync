@@ -96,13 +96,12 @@ const loginUser = async (req, res) => {
           identity: { external_id: user.email },
         }),
       };
-      fetch(url, options)
-        .then((res) => res.json())
-        .then((json) => {
-          oneSignalResult = json;
-          console.log(oneSignalResult);
-        })
-        .catch((err) => console.error("Onesignal error:" + err));
+      try {
+        const response = await fetch(url, options);
+        oneSignalResult = await response.json();
+      } catch (error) {
+        console.error("Onesignal error:" + error);
+      }
 
       const updatedUser = await User.findByIdAndUpdate(
         user._id,
