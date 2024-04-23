@@ -105,27 +105,33 @@ const recieveLeafImage = async (req, res) => {
             Authorization: "Basic " + process.env.OSAPIKEY,
             "content-type": "application/json",
           },
-          body: JSON.stringify({
+          body: {
             app_id: process.env.APPID,
             include_aliases: {
               external_id: [userData.email],
             },
             target_channel: "push",
             data: { foo: "bar" },
-          }),
+          },
         };
-        options.headings = {
+        options.body.headings = {
           en:
-            "🌱 Crop Health Alert! Abnormal pattern detected by " +
+            "Crop Health Alert! Abnormal pattern detected by " +
             deviceData.name,
         };
-        options.contents = {
+        options.body.contents = {
           en:
             status.toLowerCase() +
             " was detected! Opinion rejected! Tap to confirm the disease detection!",
         };
-        const OSresponse = await fetch(url, options);
-        const OSdata = await OSresponse.json();
+        options.body = JSON.stringify(options.body);
+        try {
+          const osResponse = await fetch(url, options);
+          const osJson = await osResponse.json();
+          console.log("OneSignal" + JSON.stringify(osJson));
+        } catch (error) {
+          console.log("One signal 500:" + error.message);
+        }
 
         // get message and action according to leafImage
         const leafAnalysis = await analyzeImage(leafImage);
@@ -248,16 +254,16 @@ const recieveSoilData = async (req, res) => {
       headers: {
         accept: "application/json",
         Authorization: "Basic " + process.env.OSAPIKEY,
-        "content-type": "application/json",
+        "content-Type": "application/json",
       },
-      body: JSON.stringify({
+      body: {
         app_id: process.env.APPID,
         include_aliases: {
           external_id: [userData.email],
         },
         target_channel: "push",
         data: { foo: "bar" },
-      }),
+      },
     };
 
     // ****Check if the type of crop is provided****
@@ -279,107 +285,108 @@ const recieveSoilData = async (req, res) => {
         !soilAlert.severity ||
         !soilAlert.nutrient
       ) {
-        options.headings = {
+        options.body.headings = {
           en: "🌱Crop Health Update! On " + deviceData.name + " Soil!",
         };
-        options.contents = {
+        options.body.contents = {
           en:
             "Your" +
             updatedCrop.name +
             "crop is flourishing. Keep up the fantastic work! 🌽 Tap for further details!",
         };
+        options.body = JSON.stringify(options.body);
         try {
-          const OSresponse = await fetch(url, options);
-          const OSdata = await OSresponse.json();
+          const osResponse = await fetch(url, options);
+          const osJson = await osResponse.json();
+          console.log("OneSignal" + JSON.stringify(osJson));
         } catch (error) {
-          console.error("error:" + error);
+          console.log("One signal 500:" + error.message);
         }
         return res
           .status(200)
           .json({ result: "success", frequencyFlag: req.frequencyFlag });
-      }
-      const includesHigh = soilAlert.severity.includes("high");
-      // send Notifications option
-
-      // if there is no severe alert
-      if (!includesHigh) {
-        options.headings = {
-          en: "🌱Crop Health Update! On " + deviceData.name + " Soil!",
-        };
-        options.contents = {
-          en:
-            "Your" +
-            updatedCrop.name +
-            "crop is in good condition. Keep up the great work! 🌽 Tap for further details!",
-        };
       } else {
-        options.headings = {
-          en: "Attention: Soil Health Alert on: " + deviceData.name + "!",
-        };
-        options.contents = {
-          en:
-            soilAlert.message[0] +
-            "! Tap to view vital insights and get more information on your soil. 📱🌾",
-        };
+        const includesHigh = soilAlert.severity.includes("high");
+        // send Notifications option
+
+        // if there is no severe alert
+        if (!includesHigh) {
+          options.body.headings = {
+            en: "🌱Crop Health Update! On " + deviceData.name + " Soil!",
+          };
+          options.body.contents = {
+            en:
+              "Your" +
+              updatedCrop.name +
+              "crop is in good condition. Keep up the great work! 🌽 Tap for further details!",
+          };
+        } else {
+          options.body.headings = {
+            en: "Attention: Soil Health Alert on: " + deviceData.name + "!",
+          };
+          options.body.contents = {
+            en:
+              soilAlert.message[0] +
+              "! Tap to view vital insights and get more information on your soil. 📱🌾",
+          };
+        }
       }
-      console.log(options.contents);
-      try {
-        const OSresponse = await fetch(url, options);
-        const OSdata = await OSresponse.json();
-      } catch (error) {
-        console.error("error:" + error);
-      }
-    } else {
-      //in case the crop isn't named
+    }
+    // No cropName provided
+    else {
       soilAlert = await inspectSoilMedium(soilReadings);
       // In case there is no alerts
-      console.log("Un-named:" + soilReadings);
       if (
         !soilAlert.action ||
         !soilAlert.message ||
         !soilAlert.severity ||
         !soilAlert.nutrient
       ) {
-        options.headings = {
+        options.body.headings = {
           en: "Soil State Update! On " + deviceData.name + " Soil!",
         };
-        options.contents = {
+        options.body.contents = {
           en: "Your soil's excellent condition sets the stage for thriving plants! Tap to select your crop for personalized tips and alerts!🌾",
         };
+        options.body = JSON.stringify(options.body);
         try {
-          const OSresponse = await fetch(url, options);
-          const OSdata = await OSresponse.json();
+          const osResponse = await fetch(url, options);
+          const osJson = await osResponse.json();
+          console.log("OneSignal" + JSON.stringify(osJson));
         } catch (error) {
-          console.error("error:" + error);
+          console.log("One signal 500:" + error.message);
         }
         return res
           .status(200)
           .json({ result: "success", frequencyFlag: req.frequencyFlag });
-      }
-      // Filter the alerts to only save those high and save medium and high severity
-      const includesHigh = soilAlert.severity.includes("high");
-      // if it doesnt contain high severity send normal notification
-      if (!includesHigh) {
-        options.headings = { en: "Optimize Your Soil's Health!🌿" };
-        options.contents = {
-          en: "Ensure your soil readings are tailored to your crops' needs for vibrant growth and optimal yield! Tap for further details!",
-        };
       } else {
-        options.headings = {
-          en: "Attention: Soil Health Alert on: " + deviceData.name + "!",
-        };
-        options.contents = {
-          en:
-            soilAlert.message[0] +
-            "! Your soil could use a little love to help your crops thrive! Tap to choose your crop for friendly advice and alerts!",
-        };
+        // Filter the alerts to only save those high and save medium and high severity
+        const includesHigh = soilAlert.severity.includes("high");
+        // if it doesnt contain high severity send normal notification
+        if (!includesHigh) {
+          options.body.headings = { en: "Optimize Your Soil's Health!🌿" };
+          options.body.contents = {
+            en: "Ensure your soil readings are tailored to your crops' needs for vibrant growth and optimal yield! Tap for further details!",
+          };
+        } else {
+          options.body.headings = {
+            en: "Attention: Soil Health Alert on: " + deviceData.name + "!",
+          };
+          options.body.contents = {
+            en:
+              soilAlert.message[0] +
+              "! Your soil could use a little love to help your crops thrive! Tap to choose your crop for friendly advice and alerts!",
+          };
+        }
       }
-      try {
-        const OSresponse = await fetch(url, options);
-        const OSdata = await OSresponse.json();
-      } catch (error) {
-        console.error("error:" + error);
-      }
+    }
+    options.body = JSON.stringify(options.body);
+    try {
+      const osResponse = await fetch(url, options);
+      const osJson = await osResponse.json();
+      console.log("OneSignal" + JSON.stringify(osJson));
+    } catch (error) {
+      console.log("One signal 500:" + error.message);
     }
     updatedCrop = await Crop.findByIdAndUpdate(
       cropId,
