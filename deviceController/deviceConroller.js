@@ -79,16 +79,17 @@ const recieveLeafImage = async (req, res) => {
     } catch (error) {
       console.log("Flask server error:" + error);
     }
-    const status = data.result ? data.result : null;
+    const status = data ? data.result : null;
     const leafImg = await LeafImage.create({
       image: leafImageBuffer,
       status,
     });
+    let leaf = { status: status };
     // if the camera classified the image
-    if (status) {
+    if (status && status.toLowerCase() !== "healthy") {
       // Send notification
       try {
-        const deviceData = await Device.findById(req.cropId);
+        const deviceData = await Device.findById(req.deviceId);
         if (!deviceData) {
           res.status(404).json({ error: "Device not found" });
         }
@@ -111,45 +112,42 @@ const recieveLeafImage = async (req, res) => {
             },
             target_channel: "push",
             data: { foo: "bar" },
-            headings: {
-              en:
-                "🌱 Crop Health Alert! Abnormal pattern detected by " +
-                updatedDevice.name,
-            },
-            contents: {
-              en:
-                status.toLowerCase() +
-                "was detected! Opinion rejected! Tap to confirm the disease detection!",
-            },
           }),
         };
-        try {
-          const OSresponse = await fetch(url, options);
-          const OSdata = await OSresponse.json();
-        } catch (error) {
-          console.error("error:" + error);
-        }
+        options.headings = {
+          en:
+            "🌱 Crop Health Alert! Abnormal pattern detected by " +
+            deviceData.name,
+        };
+        options.contents = {
+          en:
+            status.toLowerCase() +
+            " was detected! Opinion rejected! Tap to confirm the disease detection!",
+        };
+        const OSresponse = await fetch(url, options);
+        const OSdata = await OSresponse.json();
+
         // get message and action according to leafImage
-        const leafAnalysis = await analyzeImage(leafImage).result;
-        let leaf = { status };
-        if (leafAnalysis.message && leafAnalysis.action) {
-          soil.message = leafAnalysis.message;
-          soil.action = leafAnalysis.action;
-        }
-        const updatedCrop = await Crop.findByIdAndUpdate(
-          cropId,
-          {
-            $push: { leafImages: leafImg._id, cameraCollectionDate },
-            $set: { "alerts.leaf": leaf },
-          },
-          { new: true }
-        );
-        if (!updatedCrop) {
-          return res.status(400).json({ error: "Failed to recieve image." });
+        const leafAnalysis = await analyzeImage(leafImage);
+        if (leafAnalysis && leafAnalysis.message && leafAnalysis.action) {
+          leaf.message = leafAnalysis.message;
+          leaf.action = leafAnalysis.action;
         }
       } catch (error) {
-        throw new Error("Error sending notifications");
+        console.log(error.message);
+        throw Error("Error sending notifications");
       }
+    }
+    const updatedCrop = await Crop.findByIdAndUpdate(
+      cropId,
+      {
+        $push: { leafImages: leafImg._id, cameraCollectionDate },
+        $set: { "alerts.leaf": leaf },
+      },
+      { new: true }
+    );
+    if (!updatedCrop) {
+      return res.status(400).json({ error: "Failed to recieve image." });
     }
     return res
       .status(200)
