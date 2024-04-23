@@ -322,7 +322,7 @@ const recieveSoilData = async (req, res) => {
             "! Tap to view vital insights and get more information on your soil. 📱🌾",
         };
       }
-
+      console.log(options.contents);
       try {
         const OSresponse = await fetch(url, options);
         const OSdata = await OSresponse.json();
