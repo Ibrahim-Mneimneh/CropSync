@@ -280,7 +280,7 @@ const recieveSoilData = async (req, res) => {
         !soilAlert.nutrient
       ) {
         options.headings = {
-          en: "🌱Crop Health Update! On " + updatedDevice.name + " Soil!",
+          en: "🌱Crop Health Update! On " + deviceData.name + " Soil!",
         };
         options.contents = {
           en:
@@ -304,7 +304,7 @@ const recieveSoilData = async (req, res) => {
       // if there is no severe alert
       if (!includesHigh) {
         options.headings = {
-          en: "🌱Crop Health Update! On " + updatedDevice.name + " Soil!",
+          en: "🌱Crop Health Update! On " + deviceData.name + " Soil!",
         };
         options.contents = {
           en:
@@ -341,7 +341,7 @@ const recieveSoilData = async (req, res) => {
         !soilAlert.nutrient
       ) {
         options.headings = {
-          en: "Soil State Update! On " + updatedDevice.name + " Soil!",
+          en: "Soil State Update! On " + deviceData.name + " Soil!",
         };
         options.contents = {
           en: "Your soil's excellent condition sets the stage for thriving plants! Tap to select your crop for personalized tips and alerts!🌾",
