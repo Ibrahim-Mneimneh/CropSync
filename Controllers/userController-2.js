@@ -105,7 +105,7 @@ const getDevices = async (req, res) => {
           crop: {
             name: crop.name ? crop.name : null,
             profile: crop.profile ? crop.profile : null,
-            status: crop.status ? crop.status : null,
+            alerts: crop.alerts ? crop.alerts : null,
           },
         };
         return device;
@@ -336,7 +336,10 @@ const getDeviceImages = async (req, res) => {
         if (!imageData) {
           return "";
         }
-        return "/user/" + deviceId + "/image/" + imageId;
+        return {
+          url: "/user/" + deviceId + "/image/" + imageId,
+          status: imageData.status ? imageData.status : null,
+        };
       })
     );
     return res.status(200).json({

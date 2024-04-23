@@ -156,6 +156,7 @@ const recieveLeafImage = async (req, res) => {
     return res.status(500).json({ error: error.message, error2: error });
   }
 };
+
 // send soil readings
 const recieveSoilData = async (req, res) => {
   try {
