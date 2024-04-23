@@ -271,9 +271,9 @@ const recieveSoilData = async (req, res) => {
         cropMedium = await saveSoilMedium(cropName);
       }
       // Let Gemini compare the readings and select
-      soilAlert = await compareSoilMedium(cropName, soilReadings, cropMedium)
-        .result;
+      soilAlert = await compareSoilMedium(cropName, soilReadings, cropMedium);
       //case no alert
+      console.log(" Crop has been named:" + soilAlert);
       if (
         !soilAlert.action ||
         !soilAlert.message ||
@@ -332,8 +332,9 @@ const recieveSoilData = async (req, res) => {
       }
     } else {
       //in case the crop isn't named
-      soilAlert = await inspectSoilMedium(soilReadings).result;
+      soilAlert = await inspectSoilMedium(soilReadings);
       // In case there is no alerts
+      console.log("Un-named:" + soilReadings);
       if (
         !soilAlert.action ||
         !soilAlert.message ||
