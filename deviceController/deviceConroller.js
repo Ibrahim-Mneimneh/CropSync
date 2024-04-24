@@ -115,14 +115,10 @@ const recieveLeafImage = async (req, res) => {
           },
         };
         options.body.headings = {
-          en:
-            "Crop Health Alert! Abnormal pattern detected by " +
-            deviceData.name,
+          en: "Crop Health Alert! Disease detected by " + deviceData.name + "!",
         };
         options.body.contents = {
-          en:
-            status.toLowerCase() +
-            " was detected! Opinion rejected! Tap to confirm the disease detection!",
+          en: status + " was detected! Tap to confirm the disease detection!",
         };
         options.body = JSON.stringify(options.body);
         try {
@@ -134,14 +130,22 @@ const recieveLeafImage = async (req, res) => {
         }
 
         // get message and action according to leafImage
-        const leafAnalysis = await analyzeImage(leafImage);
+        let leafAnalysis;
+        try {
+          leafAnalysis = await analyzeImage(leafImage);
+        } catch (error) {
+          console.log(error.message);
+          leafAnalysis = null;
+        }
         if (leafAnalysis && leafAnalysis.message && leafAnalysis.action) {
           leaf.message = leafAnalysis.message;
           leaf.action = leafAnalysis.action;
+        } else {
+          leaf.message = null;
+          leaf.action = null;
         }
       } catch (error) {
         console.log(error.message);
-        throw Error("Error sending notifications");
       }
     }
     const updatedCrop = await Crop.findByIdAndUpdate(
@@ -276,10 +280,15 @@ const recieveSoilData = async (req, res) => {
         cropMedium = await saveSoilMedium(cropName);
       }
       // Let Gemini compare the readings and select
-      soilAlert = await compareSoilMedium(cropName, soilReadings, cropMedium);
+      try {
+        soilAlert = await compareSoilMedium(cropName, soilReadings, cropMedium);
+      } catch (error) {
+        console.log(error.message);
+        soilAlert = null;
+      }
       //case no alert
-      console.log(" Crop has been named:" + soilAlert);
       if (
+        !soilAlert ||
         !soilAlert.action ||
         !soilAlert.message ||
         !soilAlert.severity ||
