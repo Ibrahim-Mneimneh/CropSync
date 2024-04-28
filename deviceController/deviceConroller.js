@@ -325,9 +325,9 @@ const recieveSoilData = async (req, res) => {
           };
           options.body.contents = {
             en:
-              "Your" +
+              "Your " +
               updatedCrop.name +
-              "crop is in good condition. Keep up the great work! 🌽 Tap for further details!",
+              " crop is in good condition. Keep up the great work! 🌽 Tap for further details!",
           };
         } else {
           options.body.headings = {
