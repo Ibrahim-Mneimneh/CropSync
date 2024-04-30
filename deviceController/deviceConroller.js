@@ -299,9 +299,9 @@ const recieveSoilData = async (req, res) => {
         };
         options.body.contents = {
           en:
-            "Your" +
+            "Your " +
             updatedCrop.name +
-            "crop is flourishing. Keep up the fantastic work! 🌽 Tap for further details!",
+            " crop is flourishing. Keep up the fantastic work! 🌽 Tap for further details!",
         };
         options.body = JSON.stringify(options.body);
         try {
