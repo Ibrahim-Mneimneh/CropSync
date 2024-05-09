@@ -632,17 +632,57 @@ const getMonthlyDeviceData = async (req, res) => {
   return await getDeviceDataSince(req, res, 30);
 };
 
-// Add the link to Gemini to get the tips on how to treat the leaf (zouheir)
-
-// Check if we can deploy the model on the mobile and make predictions offline (zouheir+me)
-
-// Notifications
-
-// Finish the prediction to the crop related
-
-// Optimise features ( We'll figure it how when we start)
-
-// images to url
+const editImageClass = async (req, res) => {
+  try {
+    const imageId = req.params.leafImageId;
+    const deviceId = req.params.deviceId;
+    const { imageClass } = req.body;
+    if (!imageId || !imageClass) {
+      return res.status(404).json({ error: "Invalid credentials" });
+    }
+    const deviceData = await Device.findOne({ deviceId, userId: req.userId });
+    if (!deviceData) {
+      return res.status(403).json({ error: "Invalid ImageId" });
+    }
+    const cropData = await Crop.findById(deviceData.cropId);
+    if (!cropData) {
+      return res.status(404).json({ error: "Failed to update class" });
+    }
+    const isIncluded = cropData.leafImages.includes(imageId);
+    const isLast =
+      cropData.leafImages[cropData.leafImages.length - 1] == imageId;
+    if (!isIncluded) {
+      return res.status(404).json({ error: "Image not found" });
+    }
+    const updatedImageData = await LeafImage.findByIdAndUpdate(
+      imageId,
+      {
+        status: imageClass,
+      },
+      { new: true }
+    );
+    if (!updatedImageData) {
+      return res.status(404).json({ error: "Failed to find device" });
+    }
+    if (isLast) {
+      const updateCrop = await Crop.findByIdAndUpdate(
+        deviceData.cropId,
+        {
+          $set: {
+            "alerts.leaf": { status: imageClass, message: [], action: [] },
+          },
+        },
+        { new: true }
+      );
+      if (!updateCrop) {
+        console.log("Failed to update crop");
+      }
+    }
+    return res.status(200).json({ imageId, status: imageClass });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
 module.exports = {
   setProfile,
@@ -661,4 +701,5 @@ module.exports = {
   getWeeklyDeviceData,
   getMonthlyDeviceData,
   getImageFromUrl,
+  editImageClass,
 };

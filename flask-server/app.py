@@ -88,8 +88,9 @@ def predict():
         #Cast to float32
         img_array = np.expand_dims(img_array, axis=0).astype('float32')
         # Preprocess the image
-        img_preprocessed = preprocess_input(img_array)
-        prediction = model.predict(img_preprocessed)
+        
+
+        prediction = model.predict(img_array)
         # Get the predicted class label
         predicted_class_label = np.argmax(prediction)
 

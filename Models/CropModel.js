@@ -32,4 +32,5 @@ const cropAuthSchema = new Schema(
   },
   { timestamps: true }
 );
+
 module.exports = mongoose.model("Crop", cropAuthSchema);

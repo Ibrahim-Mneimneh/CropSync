@@ -33,6 +33,7 @@ const {
   getWeeklyDeviceData,
   getMonthlyDeviceData,
   getImageFromUrl,
+  editImageClass,
 } = require("../Controllers/userController-2");
 const { isHealthy, recommendCrop } = require("../Controllers/modelController");
 const {
@@ -69,6 +70,7 @@ router.use("/:deviceId/frequency", verifyUser);
 router.use("/device/soil/reading/weekly", verifyUser);
 router.use("/device/soil/reading/monthly", verifyUser);
 router.use("/:deviceId/image/:leafImageId", verifyUser);
+router.use("/:deviceId/image/class/:leafImageId", verifyUser);
 
 router.post("/ResetPassword", resetPassword);
 router.get("/Request/DeleteAccount", deleteAccountRequest);
@@ -94,4 +96,5 @@ router.patch("/:deviceId/frequency", setDeviceFrequency);
 router.get("/device/soil/reading/weekly", getWeeklyDeviceData);
 router.get("/device/soil/reading/monthly", getMonthlyDeviceData);
 router.get("/:deviceId/image/:leafImageId", getImageFromUrl);
+router.post("/:deviceId/image/class/:leafImageId", editImageClass);
 module.exports = router;
