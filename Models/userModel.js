@@ -59,7 +59,7 @@ UserSchema.statics.signup = async function (fullName, email, password) {
           "content-type": "application/json",
         },
         body: JSON.stringify({
-          identity: { external_id: user.email },
+          identity: { external_id: email },
         }),
       };
       fetch(url, options)

@@ -6,6 +6,7 @@ const Device = require("../Models/deviceModel");
 const Crop = require("../Models/CropModel");
 const SoilReading = require("../Models/Device-Sub/soilReadingModel");
 const LeafImage = require("../Models/Device-Sub/leafImages");
+const geoip = require("geoip-lite");
 // set profile image
 const setProfile = async (req, res) => {
   try {
@@ -162,7 +163,6 @@ const addDevice = async (req, res) => {
       city,
       ...device
     } = deviceData.toObject();
-    // add crop declaration right here ******
     return res.status(200).json({ ...device, location });
   } catch (error) {
     return res.status(500).json({ error: error.message });
@@ -541,8 +541,8 @@ const getRecentDevicesImage = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-// Graph Visual Data Weekly
-const getDeviceDataSince = async (req, res, duration) => {
+//  Get devices data since a monthly or weekly date, Graph Visualization
+const getDeviceDataSince = async (req, res, duration = 7) => {
   try {
     const devicesData = await Device.find({ userId: req.userId });
     if (!devicesData) {
@@ -551,74 +551,71 @@ const getDeviceDataSince = async (req, res, duration) => {
 
     // Calculate the current date
     let currentTime = new Date(Date.now());
+    let devicesReading = [];
+    for (const deviceData of devicesData) {
+      const cropData = await Crop.findById(deviceData.cropId);
+      if (!cropData) {
+        return res.status(404).json({ error: "Crop unassigned to device" });
+      }
+      const sensorCollectionDates = cropData.sensorCollectionDate;
+      const soilReadingsId = cropData.soilReadings;
+      let weeklySensorCollectionDates = [];
+      let weeklySoilReadingIds = [];
 
-    const devicesReading = await Promise.all(
-      devicesData.map(async (deviceData) => {
-        const cropData = await Crop.findById(deviceData.cropId);
-        if (!cropData) {
-          return res.status(404).json({ error: "Crop unassigned to device" });
+      // Filter dates from the last week
+      for (let i = 0; i <= sensorCollectionDates.length - 1; i++) {
+        const currentIndex = sensorCollectionDates[i];
+        const differenceInDays =
+          (currentTime.getTime() - currentIndex.getTime()) /
+          (1000 * 60 * 60 * 24);
+        if (differenceInDays >= 0 && differenceInDays < duration) {
+          weeklySensorCollectionDates.push(sensorCollectionDates[i]);
+          weeklySoilReadingIds.push(soilReadingsId[i]);
         }
-        const sensorCollectionDates = cropData.sensorCollectionDate;
+      }
 
-        let weeklySensorCollectionDates = [];
-        let weeklySoilReadingIds = [];
+      let weeklyNitrogen = [];
+      let weeklyPhosphorus = [];
+      let weeklyPotassium = [];
+      let weeklyMoisture = [];
+      let weeklyTemperature = [];
+      let weeklyPh = [];
+      let weeklyRainfall = [];
 
-        // Filter dates from the last week
-        for (let i = sensorCollectionDates.length - 1; i >= 0; i--) {
-          const currentIndex = sensorCollectionDates[i];
-          const differenceInDays =
-            (currentTime.getTime() - currentIndex.getTime()) /
-            (1000 * 60 * 60 * 24);
-          if (differenceInDays >= 0 && differenceInDays < duration) {
-            weeklySensorCollectionDates.push(sensorCollectionDates[i]);
-            weeklySoilReadingIds.push(cropData.soilReadings[i]);
-          }
+      let soilReadingError = [];
+
+      for (const soilReadingId of weeklySoilReadingIds) {
+        const soilReading = await SoilReading.findById(soilReadingId);
+        if (!soilReading) {
+          soilReadingError.push(soilReadingId);
         }
-        let weeklyNitrogen = [];
-        let weeklyPhosphorus = [];
-        let weeklyPotassium = [];
-        let weeklyMoisture = [];
-        let weeklyTemperature = [];
-        let weeklyPh = [];
-        let weeklyRainfall = [];
-
-        const soilReadingError = await Promise.all(
-          weeklySoilReadingIds.map(async (soilReadingId) => {
-            const soilReading = await SoilReading.findById(soilReadingId);
-            if (!soilReading) {
-              return null;
-            }
-            weeklyNitrogen.push(soilReading.nitrogen);
-            weeklyPh.push(soilReading.ph);
-            weeklyPotassium.push(soilReading.potassium);
-            weeklyPhosphorus.push(soilReading.phosphorus);
-            weeklyMoisture.push(soilReading.humidity);
-            weeklyTemperature.push(soilReading.temperature);
-            weeklyRainfall.push(soilReading.rainfall);
-            return soilReadingId;
-          })
-        );
-        if (!soilReadingError) {
-          return res.status(400).json({ error: "Failed to fetch data" });
-        }
-        return {
-          deviceId: deviceData.deviceId,
-          deviceName: deviceData.name,
-          location: deviceData.city + ", " + deviceData.country,
-          cropName: cropData.name,
-          status: cropData.status,
-          nitrogen: weeklyNitrogen,
-          phosphorus: weeklyPhosphorus,
-          potassium: weeklyPotassium,
-          temperature: weeklyTemperature,
-          ph: weeklyPh,
-          moisture: weeklyMoisture,
-          rainfall: weeklyRainfall,
-          collectionDates: weeklySensorCollectionDates,
-        };
-      })
-    );
-
+        weeklyNitrogen.push(soilReading.nitrogen);
+        weeklyPh.push(soilReading.ph);
+        weeklyPotassium.push(soilReading.potassium);
+        weeklyPhosphorus.push(soilReading.phosphorus);
+        weeklyMoisture.push(soilReading.humidity);
+        weeklyTemperature.push(soilReading.temperature);
+        weeklyRainfall.push(soilReading.rainfall);
+      }
+      if (soilReadingError[0]) {
+        return res.status(400).json({ error: "Failed to fetch data" });
+      }
+      devicesReading.push({
+        deviceId: deviceData.deviceId,
+        deviceName: deviceData.name,
+        location: deviceData.city + ", " + deviceData.country,
+        cropName: cropData.name,
+        status: cropData.status,
+        nitrogen: weeklyNitrogen,
+        phosphorus: weeklyPhosphorus,
+        potassium: weeklyPotassium,
+        temperature: weeklyTemperature,
+        ph: weeklyPh,
+        moisture: weeklyMoisture,
+        rainfall: weeklyRainfall,
+        collectionDates: weeklySensorCollectionDates,
+      });
+    }
     return res.status(200).json({ data: devicesReading });
   } catch (error) {
     res.status(500).json({ error: error.message });

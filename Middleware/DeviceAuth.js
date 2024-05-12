@@ -8,9 +8,7 @@ const verifyDevice = async (req, res, next) => {
   if (!authorization) {
     return res.status(401).json({ error: "Authorization token required!" });
   }
-
   const token = authorization.split(" ")[1];
-
   try {
     let { deviceId, cropId } = jwt.verify(token, process.env.SECRET);
     const device = await Device.findById(deviceId);
